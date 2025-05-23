@@ -30,7 +30,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CreateCategory() {
     const [displayImage, setDisplayImage] = useState<boolean>(true);
-    const { categories, loaded, getCategories, dispatch, setFlashMessage } = useContext(categoriesContext);
+    const { categories, categoriesLoaded, getCategories, dispatch, setFlashMessage } = useContext(categoriesContext);
 
     const [errors, setErrors] = useState({
         name: '',
@@ -43,7 +43,7 @@ export default function CreateCategory() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!loaded) {
+        if (!categoriesLoaded) {
             getCategories();
         }
     }, [])

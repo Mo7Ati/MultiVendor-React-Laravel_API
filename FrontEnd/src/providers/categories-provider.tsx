@@ -6,7 +6,7 @@ import { useReducer, createContext, useState } from "react";
 
 interface ICategoryContext {
     categories: CategoryType[],
-    loaded: boolean,
+    categoriesLoaded: boolean,
     flashMessage: string,
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
     setFlashMessage: React.Dispatch<React.SetStateAction<string>>,
@@ -16,7 +16,7 @@ interface ICategoryContext {
 export const categoriesContext = createContext<ICategoryContext>(
     {
         categories: [],
-        loaded: false,
+        categoriesLoaded: false,
         flashMessage: '',
         getCategories: () => new Promise(() => { }),
         dispatch: () => { },
@@ -44,7 +44,7 @@ export const CategoriesProvider = ({ children }: { children: React.ReactNode }) 
     return (
         <categoriesContext.Provider value={{
             categories,
-            loaded,
+            categoriesLoaded: loaded,
             flashMessage,
             getCategories,
             dispatch,

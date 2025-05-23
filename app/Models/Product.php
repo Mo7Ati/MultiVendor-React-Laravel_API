@@ -21,7 +21,13 @@ class Product extends Model
         'category_id',
         'status',
     ];
-
+    protected function casts(): array
+    {
+        return [
+            'category_id' => 'integer',
+            'store_id' => 'integer',
+        ];
+    }
     protected $appends = ['image_url', 'tags'];
 
     protected static function booted()

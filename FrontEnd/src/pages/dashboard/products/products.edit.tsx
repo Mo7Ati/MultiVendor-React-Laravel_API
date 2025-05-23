@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import React, { useEffect, useState } from 'react';
+import React, { use, useContext, useEffect, useState } from 'react';
 import { UploadOutlined } from '@ant-design/icons';
 import {
     Input,
@@ -11,10 +11,16 @@ import {
     Radio,
     Upload,
     SelectProps,
+    Spin,
 
 } from 'antd';
 import TextArea from "antd/es/input/TextArea";
-import { CategoryType, ProductType, StoreType, TagType } from "@/types/dashboard";
+import { CategoryType, EStatus, ProductType, StoreType, TagType } from "@/types/dashboard";
+import axiosClient from "@/axios-client";
+import { productsContext } from "@/providers/products-provider";
+import { categoriesContext } from "@/providers/categories-provider";
+import { tagsContext } from "@/providers/tags-provider";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,28 +31,87 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 
 
-
 export default function EditProduct(props: any) {
-    for (let i = 0; i < props.tags.length; i++) {
-        options.push({
-            label: props.tags[i].name,
-            value: props.tags[i].name,
-        });
-    }
 
+
+
+    const [displayImage, setDisplayImage] = useState<boolean>(true)
+
+    const { products, loaded: productsLoaded, getProducts, dispatch, setFlashMessage } = useContext(productsContext);
+    const { categories, categoriesLoaded, getCategories } = useContext(categoriesContext);
+    const { tags, tagsLoaded, getTags, dispatch: tagsDispatch } = useContext(tagsContext);
+
+    const [errors, setErrors] = useState({
+        name: '',
+        category_id: '',
+        store_id: '',
+        price: '',
+        compare_price: '',
+        quantity: '',
+        tags: '',
+        description: '',
+        image: '',
+        status: EStatus,
+    });
+
+    const navigate = useNavigate();
+    const params = useParams();
+
+    const [product, setProduct] = useState<ProductType>(products.find(product => product.id === Number(params.id))!);
+    const [image, setImage] = useState(products.find(product => product.id === Number(params.id))?.image!);
+
+
+    useEffect(() => {
+        if (!categoriesLoaded) {
+            getCategories();
+        }
+        if (!tagsLoaded) {
+            getTags();
+        }
+        if (!productsLoaded) {
+            getProducts();
+        }
+    }, []);
+
+    useEffect(() => {
+        setImage(products.find(product => product.id === Number(params.id))?.image!)
+        setProduct({
+            ...products.find(product => product.id === Number(params.id))!,
+            image: '',
+            _method: 'PUT',
+        });
+    }, [productsLoaded])
+
+
+    console.log(product);
+
+
+    const handleSubmit = () => {
+        axiosClient.post(`/admin/dashboard/products/${params.id}`, product, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }).then(res => {
+            dispatch({ type: "UPDATE_PRODUCT", payload: res.data });
+            setFlashMessage("Product Updated Successfully");
+            navigate("/admin/dashboard/products");
+        }).catch((res => {
+            console.log(res.response.data.errors);
+        }))
+    }
+    console.log(product);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {/* <Head title="Categories" /> */}
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <Form
+                {product?.name ? <Form
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 14 }}
                     layout="horizontal"
                     style={{ maxWidth: 800 }}
                     onFinish={handleSubmit}
                 >
-
                     <Form.Item label="Product Name"
                         help={
                             errors.name && (
@@ -58,11 +123,10 @@ export default function EditProduct(props: any) {
                         validateStatus={errors.name && 'error'}
                     >
                         <Input
-
-                            value={data.name}
+                            value={product.name}
                             onChange={(e) => {
                                 errors.name = '';
-                                setData('name', e.currentTarget.value)
+                                setProduct({ ...product, name: e.currentTarget.value })
                             }}
                         />
 
@@ -79,13 +143,14 @@ export default function EditProduct(props: any) {
                         validateStatus={errors.category_id ? 'error' : ''}
                     >
                         <Select
-                            value={data.category_id ?? ''}
+                            value={product.category_id ?? ''}
                             onChange={(value) => {
-                                errors.category_id = '';
-                                setData('category_id', Number(value));
-                            }}>
+                                setProduct({ ...product, category_id: value, category: categories.find(category => category.id === value)! });
+                            }}
+                        >
+                            <Select.Option value={''}>No Category</Select.Option>
                             {
-                                (props.categories).map(category => (
+                                (categories).map((category: CategoryType) => (
                                     <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
                                 ))
                             }
@@ -103,16 +168,15 @@ export default function EditProduct(props: any) {
                         validateStatus={errors.store_id ? 'error' : ''}
                     >
                         <Select
-                            value={data.store_id ?? ''}
+                            value={3}
                             onChange={(value) => {
-                                errors.store_id = '';
-                                setData('store_id', Number(value));
+                                setProduct({ ...product, store_id: Number(value) });
                             }}>
-                            {
-                                (props.stores).map(store => (
+                            {/* {
+                                (props.stores).map((store: StoreType) => (
                                     <Select.Option key={store.id} value={store.id}>{store.name}</Select.Option>
                                 ))
-                            }
+                            } */}
                         </Select>
                     </Form.Item>
 
@@ -125,21 +189,20 @@ export default function EditProduct(props: any) {
                                     </span>
                                 )
                             }
-                            validateStatus={errors.price && 'error'}
+                        // validateStatus={errors.price && 'error'}
                         >
                             <Input
-                                value={data.price !== 0 ? data.price : ''}
+                                value={product.price !== 0 ? product.price : ''}
                                 onChange={
                                     (e) => {
-                                        errors.price = '';
                                         const price = Number(e.currentTarget.value);
                                         if (!isNaN(price)) {
-                                            setData('price', price);
+                                            setProduct({ ...product, price: price });
                                         } else {
-                                            if (data.price) {
-                                                setData('price', data.price)
+                                            if (product.price) {
+                                                setProduct({ ...product, price: product.price })
                                             } else {
-                                                setData('price', 0)
+                                                setProduct({ ...product, price: 0 })
                                             }
 
                                         }
@@ -157,21 +220,20 @@ export default function EditProduct(props: any) {
                                     </span>
                                 )
                             }
-                            validateStatus={errors.compare_price && 'error'}
+                        // validateStatus={errors.compare_price && 'error'}
                         >
                             <Input
-                                value={data.compare_price !== 0 ? data.compare_price : ''}
+                                value={product.compare_price !== 0 ? product.compare_price : ''}
                                 onChange={
                                     (e) => {
-                                        errors.compare_price = '';
                                         const price = Number(e.currentTarget.value);
                                         if (!isNaN(price)) {
-                                            setData('compare_price', price);
+                                            setProduct({ ...product, compare_price: price });
                                         } else {
-                                            if (data.compare_price) {
-                                                setData('compare_price', data.price)
+                                            if (product.compare_price) {
+                                                setProduct({ ...product, compare_price: product.compare_price })
                                             } else {
-                                                setData('compare_price', 0)
+                                                setProduct({ ...product, compare_price: 0 })
                                             }
 
                                         }
@@ -182,8 +244,7 @@ export default function EditProduct(props: any) {
                         </Form.Item>
                     </div>
 
-                    <Form.Item
-                        label="Description"
+                    <Form.Item label="Description"
                         help={
                             errors.description && (
                                 <span className="ml-5 text-red-450 text-sm font-medium">
@@ -194,14 +255,15 @@ export default function EditProduct(props: any) {
                         validateStatus={errors.description ? 'error' : ''} >
                         <TextArea
                             rows={3}
-                            value={data.description}
+                            value={product.description}
                             onChange={e => {
                                 errors.description = '';
-                                setData('description', e.currentTarget.value)
+                                setProduct({ ...product, description: e.currentTarget.value })
                             }
                             }
                         />
                     </Form.Item>
+
 
                     <Form.Item label="logo"
                         help={
@@ -214,18 +276,18 @@ export default function EditProduct(props: any) {
 
                         <div className="flex flex-row items-center gap-10 ml-3">
                             {
-                                (props.formType === EForm.EDIT && props.product.image && displayImage) && (
+                                (image && displayImage) && (
                                     <Image
                                         height={80}
                                         width={100}
-                                        src={data.image_url}
+                                        src={product.image_url}
                                     />
                                 )
                             }
                             <div className="flex flex-col gap-3">
                                 <Upload
                                     beforeUpload={(value) => {
-                                        setData('image', value);
+                                        setProduct({ ...product, image: value });
                                         setDisplayImage(false);
                                         return false;
                                     }}
@@ -235,17 +297,17 @@ export default function EditProduct(props: any) {
                                 >
                                     <Button icon={<UploadOutlined />}>
                                         {
-                                            (props.formType === EForm.EDIT && props.product.image) ? "Update Logo" : "Upload Logo"
+                                            displayImage ? "Update Logo" : "Upload Logo"
                                         }
                                     </Button>
                                 </Upload>
 
                                 {
-                                    (props.formType === EForm.EDIT && props.product.image && displayImage) && (
+                                    (image && displayImage) && (
                                         <Button
                                             color="red"
                                             variant="outlined"
-                                            onClick={e => { setDisplayImage(false), setData('removeImage', true) }}
+                                            onClick={e => { setDisplayImage(false), setProduct({ ...product, removeImage: true }) }}
                                         >
                                             Remove Image
                                         </Button>
@@ -263,39 +325,36 @@ export default function EditProduct(props: any) {
                                 </span>
                             )
                         }
-                        validateStatus={errors.tags && 'error'}
+                    // validateStatus={errors.tags && 'error'}
                     >
                         <Select
                             mode="tags"
-                            value={data.tags}
+                            value={product.tags}
                             style={{ width: '100%' }}
                             placeholder="Enter Tags"
                             onChange={(value) => {
-                                errors.tags = '';
-                                setData('tags', value);
+                                setProduct({ ...product, tags: value });
                             }}
-                            options={options}
+                            options={tags}
                         />
                     </Form.Item>
-
 
                     <Form.Item label="Status"
                         help={
                             errors.status && (
                                 <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.status}
+                                    {/* {errors.status} */}
                                 </span>
                             )
                         }
                         validateStatus={errors.status ? 'error' : ''}
                     >
-                        <Radio.Group defaultValue={props.product.status}>
+                        <Radio.Group defaultValue={'active'}>
                             <Radio
                                 value="active"
                                 name="status"
                                 onChange={e => {
-                                    errors.status = '';
-                                    setData('status', e.target.value)
+                                    setProduct({ ...product, status: e.target.value })
                                 }
                                 }
                             >
@@ -304,30 +363,30 @@ export default function EditProduct(props: any) {
                             <Radio
                                 value="archived"
                                 name="status"
-                                onChange={e =>
-                                    setData('status', e.target.value)
+                                onChange={e => {
+                                    setProduct({ ...product, status: e.target.value })
+                                }
                                 }
                             >
                                 Archived
                             </Radio>
                         </Radio.Group>
                     </Form.Item>
+
                     <Form.Item >
                         <div className="flex gap-10 mt-1">
                             <Button color="primary" className="ml-20" htmlType="submit" variant="outlined">
-                                {
-                                    (props.formType === EForm.CREATE) ? "Create" : "Edit"
-                                }
+                                Edit
                             </Button>
                             <Button color="danger" variant="outlined"
                                 onClick={() => {
-                                    router.get(route('dashboard.products.index'));
+                                    navigate('/admin/dashboard/products');
                                 }}>
                                 Cancel
                             </Button>
                         </div>
                     </Form.Item>
-                </Form>
+                </Form> : <Spin />}
             </div>
         </AppLayout >
     );

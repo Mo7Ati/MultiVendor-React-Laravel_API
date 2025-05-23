@@ -57,7 +57,7 @@ export default function ProductsIndex() {
                             color="primary"
                             variant="outlined"
                             className="mb-2"
-                            onClick={() => navigate('/admin/dashboard/products')}
+                            onClick={() => navigate('/admin/dashboard/products/create')}
                         >
                             Add Product
                         </Button>
@@ -81,7 +81,7 @@ export default function ProductsIndex() {
                         render={(_: any, record: ProductType) => (
                             <>
                                 {
-                                    record.category.name
+                                    record.category?.name
                                 }
                             </>
                         )} />
@@ -91,7 +91,7 @@ export default function ProductsIndex() {
                         render={(_: any, record: ProductType) => (
                             <>
                                 {
-                                    record.store.name
+                                    record.store?.name
                                 }
                             </>
                         )} />

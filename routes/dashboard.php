@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\CategoriesController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\StoreController;
+use App\Http\Controllers\Dashboard\TagsController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Middleware\MarkNotificationAsRead;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,7 @@ Route::group([
         'admins' => AdminController::class,
         'users' => UserController::class,
         'roles' => RoleController::class,
+        'tags' => TagsController::class,
     ]);
 
 });

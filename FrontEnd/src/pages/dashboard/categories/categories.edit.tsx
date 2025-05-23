@@ -30,7 +30,7 @@ export default function EditCategory(props: any) {
     const navigate = useNavigate();
     const params = useParams();
 
-    const { categories, loaded, getCategories, dispatch, setFlashMessage } = useContext(categoriesContext);
+    const { categories, categoriesLoaded, getCategories, dispatch, setFlashMessage } = useContext(categoriesContext);
     const [data, setData] = useState<CategoryType>(categories.find(category => category.id === Number(params.id))!);
     const [image, setImage] = useState(categories.find(category => category.id === Number(params.id))?.image);
     const [displayImage, setDisplayImage] = useState<boolean>(true);
@@ -44,7 +44,7 @@ export default function EditCategory(props: any) {
     });
 
     useEffect(() => {
-        if (!loaded) {
+        if (!categoriesLoaded) {
             getCategories();
         }
         setImage(categories.find(category => category.id === Number(params.id))?.image);
@@ -53,7 +53,7 @@ export default function EditCategory(props: any) {
             image: '',
             _method: 'PUT',
         });
-    }, [loaded]);
+    }, [categoriesLoaded]);
 
 
 

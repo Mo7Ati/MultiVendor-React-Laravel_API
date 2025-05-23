@@ -23,43 +23,46 @@ import ProductsIndex from './pages/dashboard/products/products.index';
 import CreateProduct from './pages/dashboard/products/products.create';
 import EditProduct from './pages/dashboard/products/products.edit';
 import { ProductsProvider } from './providers/products-provider';
+import { TagsProvider } from './providers/tags-provider';
 
 
 createRoot(document.getElementById('root')!).render(
     <DashboardAuthProvider>
         <CategoriesProvider>
             <ProductsProvider>
-                <BrowserRouter>
-                    <Routes>
-                        <Route path='/admin'>
-                            <Route element={<Auth />} path={'dashboard'}>
-                                <Route path='' element={<Dashboard />} />
-                                <Route path={'settings/profile'} element={<Profile />} />
-                                <Route path={'settings/password'} element={<Password />} />
-                                <Route path={'settings/appearance'} element={<Appearance />} />
+                <TagsProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            <Route path='/admin'>
+                                <Route element={<Auth />} path={'dashboard'}>
+                                    <Route path='' element={<Dashboard />} />
+                                    <Route path={'settings/profile'} element={<Profile />} />
+                                    <Route path={'settings/password'} element={<Password />} />
+                                    <Route path={'settings/appearance'} element={<Appearance />} />
 
 
-                                <Route path={'categories'} >
-                                    <Route path={''} element={<CategoriesIndex />} />
-                                    <Route path={'create'} element={<CreateCategory />} />
-                                    <Route path={':id/edit'} element={<EditCategory />} />
+                                    <Route path={'categories'} >
+                                        <Route path={''} element={<CategoriesIndex />} />
+                                        <Route path={'create'} element={<CreateCategory />} />
+                                        <Route path={':id/edit'} element={<EditCategory />} />
+                                    </Route>
+
+                                    <Route path={'products'} >
+                                        <Route path={''} element={<ProductsIndex />} />
+                                        <Route path={'create'} element={<CreateProduct />} />
+                                        <Route path={':id/edit'} element={<EditProduct />} />
+                                    </Route>
                                 </Route>
-
-                                <Route path={'products'} >
-                                    <Route path={''} element={<ProductsIndex />} />
-                                    <Route path={'create'} element={<CreateProduct />} />
-                                    <Route path={':id/edit'} element={<EditProduct />} />
+                                <Route element={<Guest />}>
+                                    <Route path={'login'} element={<Login canResetPassword />} />
+                                    <Route path={'forgot-password'} element={<ForgotPassword />} />
+                                    <Route path={'register'} element={<Register />} />
+                                    <Route path={'forgot-password'} element={<ResetPassword />} />
                                 </Route>
                             </Route>
-                            <Route element={<Guest />}>
-                                <Route path={'login'} element={<Login canResetPassword />} />
-                                <Route path={'forgot-password'} element={<ForgotPassword />} />
-                                <Route path={'register'} element={<Register />} />
-                                <Route path={'forgot-password'} element={<ResetPassword />} />
-                            </Route>
-                        </Route>
-                    </Routes >
-                </BrowserRouter >
+                        </Routes >
+                    </BrowserRouter >
+                </TagsProvider>
             </ProductsProvider>
         </CategoriesProvider>
     </DashboardAuthProvider >

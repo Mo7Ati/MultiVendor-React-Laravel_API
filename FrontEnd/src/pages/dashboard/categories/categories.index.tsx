@@ -1,11 +1,11 @@
 import axiosClient from "@/axios-client";
 import { usePermissions } from "@/hooks/use-permissions";
 import AppLayout from "@/layouts/app-layout";
-import { categoriesContext } from "@/providers/categories-provider";
+import { categoriesContext, CategoriesProvider } from "@/providers/categories-provider";
 import { BreadcrumbItem } from "@/types";
 import { AdminType, CategoryType } from "@/types/dashboard";
 import { Button, Flex, Space, Table, Image, message, Skeleton } from 'antd';
-import { useContext, useEffect, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -24,19 +24,18 @@ interface Iprops {
     flash: { message: string },
 }
 export default function CategoriesIndex() {
-    const { categories, loaded, flashMessage, setLoaded, dispatch, getCategories, setFlashMessage } = useContext(categoriesContext);
+    const { categories, categoriesLoaded, flashMessage, setLoaded, dispatch, getCategories, setFlashMessage } = useContext(categoriesContext);
     const can = usePermissions();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!loaded) {
+        if (!categoriesLoaded) {
             getCategories();
         }
     }, []);
 
     const { Column } = Table;
     const [messageApi, contextHolder] = message.useMessage();
-
 
     useEffect(() => {
         if (flashMessage) {
@@ -67,7 +66,7 @@ export default function CategoriesIndex() {
                         </div>
                     )
                 }
-                <Table<CategoryType> dataSource={categories} rowKey="id" loading={!loaded} >
+                <Table<CategoryType> dataSource={categories} rowKey="id" loading={!categoriesLoaded} >
                     <Column title="Image" render={(_: any, record: CategoryType) => (
                         <Image
                             height={80}

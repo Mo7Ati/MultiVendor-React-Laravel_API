@@ -59,7 +59,7 @@ class ProductController extends Controller
             $this->storeTags($request->post('tags'), $product);
         }
 
-        return $product;//->load('category', 'store');
+        return $product->load('category', 'store');
     }
 
 
@@ -100,7 +100,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        return $product;
+        return $product->load('category:name,id', 'store:id,name');
     }
 
 

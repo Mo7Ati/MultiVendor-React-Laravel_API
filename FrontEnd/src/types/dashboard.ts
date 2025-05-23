@@ -23,10 +23,10 @@ export type CategoryType = {
 export type ProductType = {
     id?: number;
     name: string;
-    category_id: number;
-    category: CategoryType;
-    store_id: number;
-    store: StoreType; //edit later
+    category_id: number | string | null;
+    category: CategoryType | null;
+    store_id: number | string | null;
+    store: StoreType | null; //edit later
     price: number;
     compare_price: number,
     quantity: number;
@@ -36,7 +36,7 @@ export type ProductType = {
     image_url: any;
     status: EStatus;
     removeImage: boolean;
-    _method: string;
+    _method?: string;
 }
 
 export type StoreType = {
