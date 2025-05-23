@@ -20,6 +20,7 @@ class Product extends Model
         'store_id',
         'category_id',
         'status',
+        'quantity',
     ];
     protected function casts(): array
     {

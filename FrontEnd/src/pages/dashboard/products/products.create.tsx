@@ -66,18 +66,14 @@ export default function CreateProduct() {
 
     const [data, setData] = useState<ProductType>({
         name: '',
-        category_id: null,
-        category: null,
         store_id: 3,
-        store: null,
         price: 0,
         compare_price: 0,
         quantity: 0,
         tags: [],
         description: '',
         image: '',
-        image_url: '',
-        status: EStatus.ACTIVE,
+        status: EStatus.ARCHIVED,
         removeImage: false,
     });
 
@@ -143,7 +139,7 @@ export default function CreateProduct() {
                         <Select
                             value={data.category_id ?? ''}
                             onChange={(value) => {
-                                setData({ ...data, category_id: value, category: categories.find(category => category.id === value)! });
+                                setData({ ...data, category_id: value });
                             }}
                         >
                             <Select.Option value={''}>No Category</Select.Option>
@@ -241,6 +237,37 @@ export default function CreateProduct() {
 
                         </Form.Item>
                     </div>
+
+                    <Form.Item label="quantity"
+                        help={
+                            errors.quantity && (
+                                <span className="ml-5  text-red-450 text-sm font-medium">
+                                    {errors.quantity}
+                                </span>
+                            )
+                        }
+                    // validateStatus={errors.price && 'error'}
+                    >
+                        <Input
+                            value={data.quantity !== 0 ? data.quantity : ''}
+                            onChange={
+                                (e) => {
+                                    const quantity = Number(e.currentTarget.value);
+                                    if (!isNaN(quantity)) {
+                                        setData({ ...data, quantity: quantity });
+                                    } else {
+                                        if (data.quantity) {
+                                            setData({ ...data, quantity: data.quantity })
+                                        } else {
+                                            setData({ ...data, quantity: 0 })
+                                        }
+                                    }
+                                }
+                            }
+                        />
+
+                    </Form.Item>
+
 
                     <Form.Item label="Description"
                         help={

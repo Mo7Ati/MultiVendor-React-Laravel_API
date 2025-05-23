@@ -29,6 +29,7 @@ class ProductsRequest extends FormRequest
             'image' => 'nullable|image',
             'price' => 'required|integer',
             'compare_price' => 'nullable|integer|gt:price',
+            'quantity' => 'required|integer',
             'status' => 'required|in:active,archived',
             'tags' => 'nullable|array',
         ];

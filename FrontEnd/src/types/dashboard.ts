@@ -23,19 +23,19 @@ export type CategoryType = {
 export type ProductType = {
     id?: number;
     name: string;
-    category_id: number | string | null;
-    category: CategoryType | null;
-    store_id: number | string | null;
-    store: StoreType | null;
+    category_id?: number | string;
+    category?: CategoryType;
+    store_id: number | string;
+    store?: StoreType | null;
     price: number;
     compare_price: number,
     quantity: number;
     tags: string[];
     description: string;
     image: any;
-    image_url: any;
+    image_url?: any;
     status: EStatus;
-    removeImage: boolean;
+    removeImage?: boolean;
     _method?: string;
 }
 
@@ -46,8 +46,8 @@ export type StoreType = {
     logo_url: string;
     description: string;
     status: EStatus;
-    _method: 'PUT' | 'POST';
-    removeImage: boolean;
+    _method?: 'PUT' | 'POST';
+    removeImage?: boolean;
 }
 
 export type TagType = {

@@ -13,7 +13,7 @@ import {
 
 } from 'antd';
 import TextArea from "antd/es/input/TextArea";
-import { CategoryType, StoreType, TagType } from "@/types/dashboard";
+import { CategoryType, ProductType, StoreType, TagType } from "@/types/dashboard";
 
 enum EForm {
     CREATE = 'create',
@@ -21,7 +21,7 @@ enum EForm {
 }
 
 interface Iprops {
-    store: StoreType;
+    product: ProductType;
     categories: CategoryType[];
     stores: StoreType[];
     tags: TagType[];
@@ -29,33 +29,43 @@ interface Iprops {
     formType: string;
 }
 
-export default function StoreForm(props: Iprops) {
+export default function ProductForm(props: Iprops) {
     const [displayImage, setDisplayImage] = useState<boolean>(true);
     const {
         data,
         setData,
         errors,
         post,
-    } = useForm<StoreType>(props.store);
+    } = useForm<ProductType>(props.product);
 
     useEffect(() => {
         if (props.formType === EForm.EDIT) {
-            setData({ ...data, logo_image: null, _method: 'PUT', removeImage: false });
+            setData({ ...data, image: null, _method: 'PUT', removeImage: false });
         } else {
             setData('_method', 'POST');
         }
     }, []);
 
+    const options: SelectProps['options'] = [];
+
+    for (let i = 0; i < props.tags.length; i++) {
+        options.push({
+            label: props.tags[i].name,
+            value: props.tags[i].name,
+        });
+    }
+
     const handleSubmit = () => {
         if (props.formType === 'create') {
-            post(route('dashboard.stores.store'));
+            post(route('dashboard.products.store'));
         } else if (props.formType === 'edit') {
-            post(route('dashboard.stores.update', props.store.id), {
+            post(route('dashboard.products.update', props.product.id), {
                 forceFormData: true,
             });
         }
     }
 
+    console.log(data)
 
     return (
         <Form
@@ -66,7 +76,7 @@ export default function StoreForm(props: Iprops) {
             onFinish={handleSubmit}
         >
 
-            <Form.Item label="Store Name"
+            <Form.Item label="Product Name"
                 help={
                     errors.name && (
                         <span className="ml-5  text-red-450 text-sm font-medium">
@@ -77,6 +87,7 @@ export default function StoreForm(props: Iprops) {
                 validateStatus={errors.name && 'error'}
             >
                 <Input
+
                     value={data.name}
                     onChange={(e) => {
                         errors.name = '';
@@ -86,6 +97,119 @@ export default function StoreForm(props: Iprops) {
 
             </Form.Item>
 
+            <Form.Item label="Category"
+                help={
+                    errors.category_id && (
+                        <span className="ml-5  text-red-450  text-sm font-medium">
+                            {errors.category_id}
+                        </span>
+                    )
+                }
+                validateStatus={errors.category_id ? 'error' : ''}
+            >
+                <Select
+                    value={data.category_id ?? ''}
+                    onChange={(value) => {
+                        errors.category_id = '';
+                        setData('category_id', Number(value));
+                    }}>
+                    {
+                        (props.categories).map(category => (
+                            <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
+                        ))
+                    }
+                </Select>
+            </Form.Item>
+
+            <Form.Item label="Store"
+                help={
+                    errors.store_id && (
+                        <span className="ml-5  text-red-450  text-sm font-medium">
+                            {errors.store_id}
+                        </span>
+                    )
+                }
+                validateStatus={errors.store_id ? 'error' : ''}
+            >
+                <Select
+                    value={data.store_id ?? ''}
+                    onChange={(value) => {
+                        errors.store_id = '';
+                        setData('store_id', Number(value));
+                    }}>
+                    {
+                        (props.stores).map(store => (
+                            <Select.Option key={store.id} value={store.id}>{store.name}</Select.Option>
+                        ))
+                    }
+                </Select>
+            </Form.Item>
+
+            <div className="flex flex-col justify-center">
+                <Form.Item label="Price"
+                    help={
+                        errors.price && (
+                            <span className="ml-5  text-red-450 text-sm font-medium">
+                                {errors.price}
+                            </span>
+                        )
+                    }
+                    validateStatus={errors.price && 'error'}
+                >
+                    <Input
+                        value={data.price !== 0 ? data.price : ''}
+                        onChange={
+                            (e) => {
+                                errors.price = '';
+                                const price = Number(e.currentTarget.value);
+                                if (!isNaN(price)) {
+                                    setData('price', price);
+                                } else {
+                                    if (data.price) {
+                                        setData('price', data.price)
+                                    } else {
+                                        setData('price', 0)
+                                    }
+
+                                }
+                            }
+                        }
+                    />
+
+                </Form.Item>
+
+                <Form.Item label="Compare Price"
+                    help={
+                        errors.compare_price && (
+                            <span className="ml-5  text-red-450 text-sm font-medium">
+                                {errors.compare_price}
+                            </span>
+                        )
+                    }
+                    validateStatus={errors.compare_price && 'error'}
+                >
+                    <Input
+                        value={data.compare_price !== 0 ? data.compare_price : ''}
+                        onChange={
+                            (e) => {
+                                errors.compare_price = '';
+                                const price = Number(e.currentTarget.value);
+                                if (!isNaN(price)) {
+                                    setData('compare_price', price);
+                                } else {
+                                    if (data.compare_price) {
+                                        setData('compare_price', data.price)
+                                    } else {
+                                        setData('compare_price', 0)
+                                    }
+
+                                }
+                            }
+                        }
+                    />
+
+                </Form.Item>
+            </div>
 
             <Form.Item
                 label="Description"
@@ -110,27 +234,27 @@ export default function StoreForm(props: Iprops) {
 
             <Form.Item label="logo"
                 help={
-                    errors.logo_image && (
+                    errors.image && (
                         <span className="ml-5  text-red-450 text-sm font-medium">
-                            {errors.logo_image}
+                            {errors.image}
                         </span>
                     )
                 }>
 
                 <div className="flex flex-row items-center gap-10 ml-3">
                     {
-                        (props.formType === EForm.EDIT && props.store.logo_image && displayImage) && (
+                        (props.formType === EForm.EDIT && props.product.image && displayImage) && (
                             <Image
                                 height={80}
                                 width={100}
-                                src={data.logo_url}
+                                src={data.image_url}
                             />
                         )
                     }
                     <div className="flex flex-col gap-3">
                         <Upload
                             beforeUpload={(value) => {
-                                setData('logo_image', value);
+                                setData('image', value);
                                 setDisplayImage(false);
                                 return false;
                             }}
@@ -140,13 +264,13 @@ export default function StoreForm(props: Iprops) {
                         >
                             <Button icon={<UploadOutlined />}>
                                 {
-                                    (props.formType === EForm.EDIT && props.store.logo_image) ? "Update Logo" : "Upload Logo"
+                                    (props.formType === EForm.EDIT && props.product.image) ? "Update Logo" : "Upload Logo"
                                 }
                             </Button>
                         </Upload>
 
                         {
-                            (props.formType === EForm.EDIT && props.store.logo_image && displayImage) && (
+                            (props.formType === EForm.EDIT && props.product.image && displayImage) && (
                                 <Button
                                     color="red"
                                     variant="outlined"
@@ -160,6 +284,29 @@ export default function StoreForm(props: Iprops) {
                 </div>
             </Form.Item>
 
+            <Form.Item label="Tags"
+                help={
+                    errors.tags && (
+                        <span className="ml-5  text-red-450 text-sm font-medium">
+                            {errors.tags}
+                        </span>
+                    )
+                }
+                validateStatus={errors.tags && 'error'}
+            >
+                <Select
+                    mode="tags"
+                    value={data.tags}
+                    style={{ width: '100%' }}
+                    placeholder="Enter Tags"
+                    onChange={(value) => {
+                        errors.tags = '';
+                        setData('tags', value);
+                    }}
+                    options={options}
+                />
+            </Form.Item>
+
 
             <Form.Item label="Status"
                 help={
@@ -171,7 +318,7 @@ export default function StoreForm(props: Iprops) {
                 }
                 validateStatus={errors.status ? 'error' : ''}
             >
-                <Radio.Group defaultValue={props.store.status}>
+                <Radio.Group defaultValue={props.product.status}>
                     <Radio
                         value="active"
                         name="status"
@@ -203,7 +350,7 @@ export default function StoreForm(props: Iprops) {
                     </Button>
                     <Button color="danger" variant="outlined"
                         onClick={() => {
-                            router.get(route('dashboard.stores.index'));
+                            router.get(route('dashboard.products.index'));
                         }}>
                         Cancel
                     </Button>

@@ -62,14 +62,14 @@ export default function EditProduct(props: any) {
 
 
     useEffect(() => {
+        if (!productsLoaded) {
+            getProducts();
+        }
         if (!categoriesLoaded) {
             getCategories();
         }
         if (!tagsLoaded) {
             getTags();
-        }
-        if (!productsLoaded) {
-            getProducts();
         }
     }, []);
 
@@ -83,7 +83,6 @@ export default function EditProduct(props: any) {
     }, [productsLoaded])
 
 
-    console.log(product);
 
 
     const handleSubmit = () => {
@@ -99,8 +98,6 @@ export default function EditProduct(props: any) {
             console.log(res.response.data.errors);
         }))
     }
-    console.log(product);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {/* <Head title="Categories" /> */}
@@ -243,7 +240,36 @@ export default function EditProduct(props: any) {
 
                         </Form.Item>
                     </div>
+                    <Form.Item label="quantity"
+                        help={
+                            errors.quantity && (
+                                <span className="ml-5  text-red-450 text-sm font-medium">
+                                    {errors.quantity}
+                                </span>
+                            )
+                        }
+                    // validateStatus={errors.price && 'error'}
+                    >
+                        <Input
+                            value={product.quantity !== 0 ? product.quantity : ''}
+                            onChange={
+                                (e) => {
+                                    const quantity = Number(e.currentTarget.value);
+                                    if (!isNaN(quantity)) {
+                                        setProduct({ ...product, quantity: quantity });
+                                    } else {
+                                        if (product.quantity) {
+                                            setProduct({ ...product, quantity: product.quantity })
+                                        } else {
+                                            setProduct({ ...product, quantity: 0 })
+                                        }
 
+                                    }
+                                }
+                            }
+                        />
+
+                    </Form.Item>
                     <Form.Item label="Description"
                         help={
                             errors.description && (

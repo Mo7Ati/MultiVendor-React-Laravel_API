@@ -15,24 +15,10 @@ class StoreController extends Controller
     {
         Gate::authorize('view stores');
 
-        $stores = Store::paginate();
-        return Inertia::render(
-            'dashboard/stores/stores.index',
-            ['stores' => $stores],
-        );
+        $stores = Store::all();
+        return ['stores' => $stores];
     }
 
-
-    public function create()
-    {
-        Gate::authorize('create stores');
-
-        $store = new Store();
-        return Inertia::render(
-            'dashboard/stores/stores.create',
-            ['store' => $store],
-        );
-    }
     public function store(Request $request)
     {
         Gate::authorize('create stores');
@@ -49,31 +35,14 @@ class StoreController extends Controller
 
         $data['logo_image'] = $this->storeImage($request);
 
-        Store::create($data);
+        $store = Store::create($data);
 
-        return redirect()->route('dashboard.stores.index')
-            ->with('message', 'Store Added Successfully');
-
-
+        return $store;
     }
 
     public function show(string $id)
     {
         //
-    }
-
-    public function edit(Store $store)
-    {
-        Gate::authorize('update stores');
-
-
-        return Inertia::render(
-            'dashboard/stores/stores.edit',
-            [
-                'store' => $store,
-            ]
-        );
-
     }
 
     public function update(Request $request, Store $store)
@@ -93,8 +62,7 @@ class StoreController extends Controller
 
         $store->update($data);
 
-        return redirect()->route('dashboard.stores.index')
-            ->with('message', 'Store Updated Successfully');
+        return $store;
     }
 
     public function destroy(Store $store)

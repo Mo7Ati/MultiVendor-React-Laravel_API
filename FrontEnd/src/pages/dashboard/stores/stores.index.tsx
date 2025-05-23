@@ -1,35 +1,33 @@
+import axiosClient from "@/axios-client";
 import { usePermissions } from "@/hooks/use-permissions";
 import AppLayout from "@/layouts/app-layout";
+import { storesContext } from "@/providers/stores-provider";
 import { BreadcrumbItem } from "@/types";
 import { StoreType } from "@/types/dashboard";
-import { Head, Link, router, usePage } from "@inertiajs/react";
-import { Button, Flex, Space, Table, Image, Pagination, message } from 'antd';
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { Button, Flex, Space, Table, Image, message } from 'antd';
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Stores',
-        href: route('dashboard.stores.index'),
+        title: 'Products',
+        href: 'dashboard/products',
     },
 ];
 
-interface Iprops {
-    stores: {
-        data: StoreType[],
-        per_page: number,
-        current_page: number,
-    },
-    total_products: number,
-    flash: { message: string },
-}
-export default function StoreIndex(props: Iprops) {
-
+export default function StoresIndex() {
+    const { stores, getStores, loaded, flashMessage, setFlashMessage, dispatch } = useContext(storesContext)
     const { Column } = Table;
-    const [stores, setStores] = useState<StoreType[]>(props.stores.data);
-    const [flashMessage, setFlashMessage] = useState<string>(props.flash.message);
     const [messageApi, contextHolder] = message.useMessage();
     const can = usePermissions();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loaded) {
+            getStores();
+        }
+    }, []);
+
 
     useEffect(() => {
         if (flashMessage) {
@@ -41,29 +39,24 @@ export default function StoreIndex(props: Iprops) {
         }
     }, [flashMessage, messageApi]);
 
-
-    const onPageChange = (page: number, pageSize: number) => {
-        router.get(route('dashboard.stores.index'), { page });
-    }
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Stores" />
+            {/* <Head title="Products" /> */}
             {contextHolder}
-
             <div className="rounded-xl p-4">
                 {
-                    can('create stores') && (
+                    can('create-stores') && (
                         <Button
                             color="primary"
                             variant="outlined"
                             className="mb-2"
-                            onClick={() => router.get(route('dashboard.stores.create'))}
+                            onClick={() => navigate('/admin/dashboard/stores/create')}
                         >
                             Add Store
                         </Button>
                     )
                 }
-                <Table<StoreType> dataSource={stores} rowKey="id" pagination={false} >
+                <Table<StoreType> dataSource={stores} rowKey="id" loading={!loaded} >
                     <Column title="Image" render={(_: any, record: StoreType) => (
                         <>
                             <Image
@@ -80,19 +73,19 @@ export default function StoreIndex(props: Iprops) {
 
 
                     {
-                        (can('update stores') || can('delete stores')) && (
+                        (can('update-stores') || can('delete-stores')) && (
                             <Column
                                 title="Action"
                                 render={(_: any, record: StoreType) => (
                                     <Space size="middle">
                                         <Flex gap="small">
                                             {
-                                                can('update stores') && (
+                                                can('update-stores') && (
                                                     <Button
                                                         color="primary"
                                                         variant="outlined"
                                                         onClick={e => {
-                                                            router.get(route('dashboard.stores.edit', record))
+                                                            navigate(`/admin/dashboard/stores/${record.id}/edit`);
                                                         }}
                                                     >
                                                         Edit
@@ -103,9 +96,9 @@ export default function StoreIndex(props: Iprops) {
                                             {
                                                 can('delete stores') && (
                                                     <Button color="danger" variant="outlined" onClick={e => {
-                                                        axios.delete(route('dashboard.stores.destroy', record))
+                                                        axiosClient.delete(`/admin/dashboard/stores/${record.id}`)
                                                             .then(_ => {
-                                                                setStores(prev => prev.filter(store => store.id !== record.id));
+                                                                dispatch({ type: "DELETE_STORE", payload: record.id });
                                                                 setFlashMessage("Store Deleted Successfully");
                                                             });
                                                     }}>
@@ -120,16 +113,6 @@ export default function StoreIndex(props: Iprops) {
                         )
                     }
                 </Table>
-                <div className="mt-5">
-                    <Pagination
-                        align="start"
-                        current={props.stores.current_page}
-                        defaultCurrent={1}
-                        total={props.total_products}
-                        pageSize={props.stores.per_page}
-                        onChange={onPageChange}
-                    />
-                </div>
             </div>
         </AppLayout >
     );
