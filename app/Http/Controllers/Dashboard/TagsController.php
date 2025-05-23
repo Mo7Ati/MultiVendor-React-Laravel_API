@@ -15,6 +15,7 @@ class TagsController extends Controller
     {
         $tags = Tag::all()->map(function ($tag) {
             return [
+                'id' => $tag->id,
                 'label' => $tag->slug,
                 'value' => $tag->name,
             ];

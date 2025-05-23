@@ -89,6 +89,7 @@ export default function CreateProduct() {
             },
         }).then(res => {
             dispatch({ type: "ADD_PRODUCT", payload: res.data });
+            tagsDispatch({ type: 'UPDATE_TAGS', payload: data.tags });
             setFlashMessage("Product Added Successfully");
             navigate("/admin/dashboard/products");
         }).catch((res => {
@@ -306,7 +307,6 @@ export default function CreateProduct() {
                             placeholder="Enter Tags"
                             onChange={(value) => {
                                 setData({ ...data, tags: value })
-                                // tagsDispatch({ type: 'UPDATE_TAGS', payload: data.tags });
                             }}
                             options={tags}
                         />

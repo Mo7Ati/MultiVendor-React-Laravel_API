@@ -26,7 +26,7 @@ export type ProductType = {
     category_id: number | string | null;
     category: CategoryType | null;
     store_id: number | string | null;
-    store: StoreType | null; //edit later
+    store: StoreType | null;
     price: number;
     compare_price: number,
     quantity: number;
@@ -40,7 +40,7 @@ export type ProductType = {
 }
 
 export type StoreType = {
-    id: number;
+    id?: number;
     name: string;
     logo_image: any;
     logo_url: string;
@@ -51,8 +51,9 @@ export type StoreType = {
 }
 
 export type TagType = {
-    id: number,
-    name: string,
+    id?: number,
+    label: string,
+    value: string,
 }
 
 export type RoleType = {
@@ -66,11 +67,6 @@ export type AbilityType = {
     ability?: string;
     name: string;
     type: EAbilityType;
-}
-
-export enum EForm {
-    CREATE = 'create',
-    EDIT = 'edit',
 }
 
 export type AdminType = {
