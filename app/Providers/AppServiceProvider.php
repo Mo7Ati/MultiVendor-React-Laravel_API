@@ -20,10 +20,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::before(function ($user) {
-            return $user->super_admin;
-        });
 
+        Gate::before(function ($user) {
+            if ($user->super_admin) {
+                return true;
+            }
+        });
 
         foreach (config('abilities') as $ability) {
             Gate::define($ability, function ($user) use ($ability) {

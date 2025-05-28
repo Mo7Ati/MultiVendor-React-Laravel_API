@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Role;
 use App\Models\RoleUser;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -19,32 +20,14 @@ class AdminController extends Controller
 {
     public function index()
     {
-        Gate::authorize('view admins');
-        $admins = Admin::with('roles')->where('super_admin' , false)->paginate();
-        return Inertia::render(
-            'dashboard/admins/admins.index',
-            ['admins' => $admins]
-        );
-    }
-
-    public function create()
-    {
-        Gate::authorize('create admins');
-
-        $admin = new Admin();
-
-        return Inertia::render(
-            'dashboard/admins/admins.create',
-            [
-                'admin' => $admin,
-                'roles' => Role::all(),
-            ]
-        );
+        Gate::authorize('view-admins');
+        $admins = Admin::with('roles')->where('id', '<>', Auth::id())->get();
+        return ['admins' => $admins];
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('create admins');
+        Gate::authorize('create-admins');
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -55,7 +38,6 @@ class AdminController extends Controller
             'status' => 'required|in:active,inactive',
             'roles' => 'nullable|array',
         ]);
-
 
         DB::beginTransaction();
         try {
@@ -75,7 +57,7 @@ class AdminController extends Controller
         }
 
 
-        return redirect()->route('dashboard.admins.index')->with('message', 'Admin Added Successfully');
+        return $admin->load('roles');
     }
 
     public function show(string $id)
@@ -83,23 +65,9 @@ class AdminController extends Controller
 
     }
 
-    public function edit(Admin $admin)
-    {
-        Gate::authorize('update admins');
-
-        return Inertia::render(
-            'dashboard/admins/admins.edit',
-            [
-                'admin' => $admin->load('roles'),
-                'roles' => Role::all(),
-            ]
-        );
-        ;
-    }
-
     public function update(Request $request, Admin $admin)
     {
-        Gate::authorize('update admins');
+        Gate::authorize('update-admins');
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -127,8 +95,7 @@ class AdminController extends Controller
             $admin->roles()->detach();
         }
 
-        return redirect()->route('dashboard.admins.index')
-            ->with('message', 'Admin Updated Successfully');
+        return $admin->load('roles');
 
     }
 
@@ -137,7 +104,7 @@ class AdminController extends Controller
      */
     public function destroy(Admin $admin)
     {
-        Gate::authorize('delete admins');
+        Gate::authorize('delete-admins');
         $admin->delete();
     }
 }

@@ -34,13 +34,13 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Admins',
-        url: '',
+        url: '/admin/dashboard/admins',
         icon: LayoutGrid,
         ability: 'view-admins',
     },
     {
         title: 'Roles',
-        url: '',
+        url: '/admin/dashboard/roles',
         icon: LayoutGrid,
         ability: 'view-roles',
     },

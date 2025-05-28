@@ -102,7 +102,7 @@ class RoleController extends Controller
         foreach ($abilities as $ability) {
             RoleAbility::create([
                 'role_id' => $role_id,
-                'ability' => $ability['name'],
+                'ability' => $ability['ability'],
                 'type' => $ability['type'],
             ]);
         }

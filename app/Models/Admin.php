@@ -60,6 +60,7 @@ class Admin extends Authenticatable
         if ($this->super_admin) {
             return [];
         }
+
         $deniedAbilities = DB::select("
         SELECT ability FROM role_abilities
         inner join roles on `roles`.`id` = `role_abilities`.`role_id`

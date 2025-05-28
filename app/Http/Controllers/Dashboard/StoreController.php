@@ -13,7 +13,7 @@ class StoreController extends Controller
 {
     public function index()
     {
-        Gate::authorize('view stores');
+        Gate::authorize('view-stores');
 
         $stores = Store::all();
         return ['stores' => $stores];
@@ -21,7 +21,7 @@ class StoreController extends Controller
 
     public function store(Request $request)
     {
-        Gate::authorize('create stores');
+        Gate::authorize('create-stores');
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -47,7 +47,7 @@ class StoreController extends Controller
 
     public function update(Request $request, Store $store)
     {
-        Gate::authorize('update stores');
+        Gate::authorize('update-stores');
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -67,7 +67,7 @@ class StoreController extends Controller
 
     public function destroy(Store $store)
     {
-        Gate::authorize('delete stores');
+        Gate::authorize('delete-stores');
 
         $this->deleteOldImage($store);
         $store->delete();

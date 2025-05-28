@@ -45,6 +45,7 @@ export default function CreateRole() {
     }, [loaded])
 
 
+    console.log(role);
 
     const handleSubmit = () => {
         axiosClient.post('/admin/dashboard/roles', role)

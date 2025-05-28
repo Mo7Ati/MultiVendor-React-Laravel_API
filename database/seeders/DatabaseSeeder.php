@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         Category::factory(5)->create();
-        // Store::factory(10)->create();
-        // Product::factory(20)->create();
+        Store::factory(10)->create();
+        Product::factory(20)->create();
 
 
         // User::factory()->create([
@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'username' => 'Admin',
             'phone_number' => '0592381441',
-            'super_admin' => '1' ,
+            'super_admin' => '1',
         ]);
     }
 }

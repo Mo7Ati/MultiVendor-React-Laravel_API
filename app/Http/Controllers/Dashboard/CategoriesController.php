@@ -19,7 +19,8 @@ class CategoriesController extends Controller
 
     public function index()
     {
-        Gate::authorize('view categories');
+        // Gate::authorize('view-categories');
+
         $request = request();
         $filters = $request->query();
         $categories = Category::filter($filters)
@@ -35,7 +36,7 @@ class CategoriesController extends Controller
 
     public function create()
     {
-        Gate::authorize('create categories');
+        Gate::authorize('create-categories');
 
         $category = new Category();
         $parents = Category::all();
@@ -91,7 +92,7 @@ class CategoriesController extends Controller
 
     public function update(CategoryRequest $request, Category $category)
     {
-        Gate::authorize('update categories');
+        Gate::authorize('update-categories');
 
         $data = $request->except('image');
 

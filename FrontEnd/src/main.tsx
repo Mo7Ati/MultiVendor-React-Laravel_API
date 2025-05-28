@@ -13,7 +13,6 @@ import { DashboardAuthProvider } from './providers/dashboard-provider';
 import Password from './pages/settings/password';
 import Appearance from './pages/settings/appearance';
 import Auth from './components/auth-routes';
-import axiosClient from './axios-client';
 import { Guest } from './components/guest-routes';
 import CreateCategory from './pages/dashboard/categories/categories.create';
 import CategoriesIndex from './pages/dashboard/categories/categories.index';
@@ -32,6 +31,10 @@ import RolesIndex from './pages/dashboard/roles/roles.index';
 import CreateRole from './pages/dashboard/roles/roles.create';
 import EditRole from './pages/dashboard/roles/roles.edit';
 import RolesProvider from './providers/roles-provider';
+import AdminsProvider from './providers/admin-provider';
+import AdminsIndex from './pages/dashboard/admins/admins.index';
+import CreateAdmin from './pages/dashboard/admins/admins.create';
+import EditAdmin from './pages/dashboard/admins/admins.edit';
 
 
 createRoot(document.getElementById('root')!).render(
@@ -41,48 +44,56 @@ createRoot(document.getElementById('root')!).render(
                 <ProductsProvider>
                     <TagsProvider>
                         <RolesProvider>
-                            <BrowserRouter>
-                                <Routes>
-                                    <Route path='/admin'>
-                                        <Route element={<Auth />} path={'dashboard'}>
-                                            <Route path='' element={<Dashboard />} />
-                                            <Route path={'settings/profile'} element={<Profile />} />
-                                            <Route path={'settings/password'} element={<Password />} />
-                                            <Route path={'settings/appearance'} element={<Appearance />} />
+                            <AdminsProvider >
+                                <BrowserRouter>
+                                    <Routes>
+                                        <Route path='/admin'>
+                                            <Route element={<Auth />} path={'dashboard'}>
+                                                <Route path='' element={<Dashboard />} />
+                                                <Route path={'settings/profile'} element={<Profile />} />
+                                                <Route path={'settings/password'} element={<Password />} />
+                                                <Route path={'settings/appearance'} element={<Appearance />} />
 
 
-                                            <Route path={'categories'} >
-                                                <Route path={''} element={<CategoriesIndex />} />
-                                                <Route path={'create'} element={<CreateCategory />} />
-                                                <Route path={':id/edit'} element={<EditCategory />} />
+                                                <Route path={'categories'} >
+                                                    <Route path={''} element={<CategoriesIndex />} />
+                                                    <Route path={'create'} element={<CreateCategory />} />
+                                                    <Route path={':id/edit'} element={<EditCategory />} />
+                                                </Route>
+
+                                                <Route path={'products'} >
+                                                    <Route path={''} element={<ProductsIndex />} />
+                                                    <Route path={'create'} element={<CreateProduct />} />
+                                                    <Route path={':id/edit'} element={<EditProduct />} />
+                                                </Route>
+                                                <Route path={'stores'} >
+                                                    <Route path={''} element={<StoresIndex />} />
+                                                    <Route path={'create'} element={<CreateStore />} />
+                                                    <Route path={':id/edit'} element={<EditStore />} />
+                                                </Route>
+
+                                                <Route path={'roles'} >
+                                                    <Route path={''} element={<RolesIndex />} />
+                                                    <Route path={'create'} element={<CreateRole />} />
+                                                    <Route path={':id/edit'} element={<EditRole />} />
+                                                </Route>
+                                                <Route path={'admins'} >
+                                                    <Route path={''} element={<AdminsIndex />} />
+                                                    <Route path={'create'} element={<CreateAdmin />} />
+                                                    <Route path={':id/edit'} element={<EditAdmin />} />
+                                                </Route>
+
                                             </Route>
-
-                                            <Route path={'products'} >
-                                                <Route path={''} element={<ProductsIndex />} />
-                                                <Route path={'create'} element={<CreateProduct />} />
-                                                <Route path={':id/edit'} element={<EditProduct />} />
-                                            </Route>
-                                            <Route path={'stores'} >
-                                                <Route path={''} element={<StoresIndex />} />
-                                                <Route path={'create'} element={<CreateStore />} />
-                                                <Route path={':id/edit'} element={<EditStore />} />
-                                            </Route>
-
-                                            <Route path={'roles'} >
-                                                <Route path={''} element={<RolesIndex />} />
-                                                <Route path={'create'} element={<CreateRole />} />
-                                                <Route path={':id/edit'} element={<EditRole />} />
+                                            <Route element={<Guest />}>
+                                                <Route path={'login'} element={<Login canResetPassword />} />
+                                                <Route path={'forgot-password'} element={<ForgotPassword />} />
+                                                <Route path={'register'} element={<Register />} />
+                                                <Route path={'forgot-password'} element={<ResetPassword />} />
                                             </Route>
                                         </Route>
-                                        <Route element={<Guest />}>
-                                            <Route path={'login'} element={<Login canResetPassword />} />
-                                            <Route path={'forgot-password'} element={<ForgotPassword />} />
-                                            <Route path={'register'} element={<Register />} />
-                                            <Route path={'forgot-password'} element={<ResetPassword />} />
-                                        </Route>
-                                    </Route>
-                                </Routes >
-                            </BrowserRouter >
+                                    </Routes >
+                                </BrowserRouter >
+                            </AdminsProvider>
                         </RolesProvider>
                     </TagsProvider>
                 </ProductsProvider>

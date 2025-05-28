@@ -70,10 +70,10 @@ export type AbilityType = {
 }
 
 export type AdminType = {
-    id: number;
+    id?: number;
     name: string;
     username: string;
-    phone_number: number;
+    phone_number: number | string;
     email: string;
     status: EStatus;
     password: any;
