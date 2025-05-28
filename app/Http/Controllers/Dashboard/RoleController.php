@@ -18,40 +18,26 @@ class RoleController extends Controller
 {
     public function index()
     {
-        Gate::authorize('view roles');
+        Gate::authorize('view-roles');
 
-        $roles = Role::paginate();
+        $roles = Role::with('abilities')->get();
+        $abilities = config('abilities');
 
-        return Inertia::render(
-            'dashboard/roles/roles.index',
-            ['roles' => $roles],
-        );
-    }
-
-
-    public function create()
-    {
-        Gate::authorize('create roles');
-
-        $role = new Role();
-
-        return Inertia::render(
-            'dashboard/roles/roles.create',
-            [
-                'role' => $role,
-                'allAbilities' => Config::get('abilities'),
-            ],
-        );
+        return [
+            'roles' => $roles,
+            'allAbilities' => $abilities,
+        ];
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('create roles');
+        Gate::authorize('create-roles');
 
         $request->validate([
             'name' => 'required|string|max:255',
             'abilities' => 'required|array',
         ]);
+
         DB::beginTransaction();
         try {
             $role = Role::create([
@@ -68,29 +54,12 @@ class RoleController extends Controller
                 $e
             );
         }
-
-
-        return redirect()
-            ->route('dashboard.roles.index')
-            ->with('message', 'Role Added Successfully');
+        return $role->load('abilities');
     }
 
 
     public function show(string $id)
     {
-    }
-
-    public function edit(Role $role)
-    {
-        Gate::authorize('update roles');
-
-        return Inertia::render(
-            'dashboard/roles/roles.edit',
-            [
-                'role' => $role->load('abilities'),
-                'allAbilities' => config('abilities'),
-            ],
-        );
     }
 
 
@@ -117,9 +86,7 @@ class RoleController extends Controller
             throw $e;
         }
 
-        return redirect()
-            ->route('dashboard.roles.index')
-            ->with('message', 'Role Updated Successfully');
+        return $role->load('abilities');
 
     }
 

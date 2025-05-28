@@ -27,7 +27,7 @@ export default function ProductsIndex() {
         if (!loaded) {
             getProducts();
         }
-    }, []);
+    }, [loaded]);
 
 
 

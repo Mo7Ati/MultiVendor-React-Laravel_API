@@ -1,16 +1,21 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, router, useForm } from "@inertiajs/react";
 import { AbilityType, EAbilityType, RoleType } from "@/types/dashboard";
-import { useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { CheckOutlined, CloseOutlined, UploadOutlined } from '@ant-design/icons';
 import {
     Input,
     Button,
     Form,
     Switch,
+    Spin,
+    Flex,
 } from 'antd';
 import { useAbilities } from "@/hooks/use-abilities";
+import axiosClient from "@/axios-client";
+import { useNavigate } from "react-router-dom";
+import { RolesContext } from "@/providers/roles-provider";
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Roles',
@@ -18,31 +23,43 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface Iprops {
-    role: RoleType,
-    allAbilities: string[],
+export default function CreateRole() {
 
-}
-
-export default function CreateRole(props: Iprops) {
-    const {
-        data,
-        setData,
-        errors,
-        post,
-    } = useForm<RoleType>({
-        id: props.role.id,
-        name: props.role.name,
-        abilities: useAbilities(props.allAbilities),
+    const navigate = useNavigate();
+    const { state, dispatch, setFlashMessage, loaded, getRoles } = useContext(RolesContext);
+    const [role, setRole] = useState<RoleType>({
+        name: '',
+        abilities: state.allAbilities,
     });
 
+    const [errors, setErrors] = useState({
+        name: '',
+        abilities: '',
+    });
+
+    useEffect(() => {
+        if (!loaded) {
+            getRoles();
+        }
+        setRole({ ...role, abilities: state.allAbilities });
+    }, [loaded])
+
+
+
     const handleSubmit = () => {
-        post(route('dashboard.roles.store'));
+        axiosClient.post('/admin/dashboard/roles', role)
+            .then(res => {
+                dispatch({ type: "ADD_ROLE", payload: res.data });
+                setFlashMessage('Role Created Successfully');
+                navigate('/admin/dashboard/roles');
+            }).catch(res => {
+                setErrors(res.response.data.errors);
+            });;
     }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Roles" />
+            {/* <Head title="Roles" /> */}
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Form
                     labelCol={{ span: 4 }}
@@ -63,10 +80,10 @@ export default function CreateRole(props: Iprops) {
                         validateStatus={errors.name && 'error'}
                     >
                         <Input
-                            value={data.name}
+                            value={role.name}
                             onChange={(e) => {
                                 errors.name = '';
-                                setData('name', e.currentTarget.value)
+                                setRole({ ...role, name: e.currentTarget.value });
                             }}
                         />
                     </Form.Item>
@@ -85,7 +102,7 @@ export default function CreateRole(props: Iprops) {
 
                         <div className="flex flex-col gap-10 items-center h-100 of-hidden flex-wrap">
                             {
-                                data.abilities?.map(ability => (
+                                state.allAbilities.length ? state.allAbilities.map(ability => (
                                     <div className="flex gap-5" key={ability.name}>
                                         {
                                             ability.name
@@ -93,11 +110,11 @@ export default function CreateRole(props: Iprops) {
                                         <Switch
                                             onChange={
                                                 (e) => {
-                                                    const newArray = [...data.abilities];
+                                                    const newArray = [...state.allAbilities];
                                                     newArray.map((ab) => {
-                                                        (ab.name === ability.name) && (ab.type = (e ? EAbilityType.ALLOW : EAbilityType.DENY));
+                                                        (ab.ability === ability.ability) && (ab.type = (e ? EAbilityType.ALLOW : EAbilityType.DENY));
                                                     })
-                                                    setData('abilities', newArray);
+                                                    setRole({ ...role, abilities: newArray });
                                                 }
                                             }
                                             defaultChecked={false}
@@ -105,7 +122,7 @@ export default function CreateRole(props: Iprops) {
                                             unCheckedChildren={<CloseOutlined />}
                                         />
                                     </div>
-                                ))
+                                )) : <Spin size="large" className="" />
                             }
                         </div>
 
@@ -118,7 +135,7 @@ export default function CreateRole(props: Iprops) {
                             </Button>
                             <Button color="danger" variant="outlined"
                                 onClick={() => {
-                                    router.get(route('dashboard.roles.index'));
+                                    navigate('/admin/dashboard/roles');
                                 }}>
                                 Cancel
                             </Button>

@@ -57,7 +57,7 @@ export type TagType = {
 }
 
 export type RoleType = {
-    id: number;
+    id?: number;
     name: string;
     abilities: AbilityType[];
 }
