@@ -28,7 +28,7 @@ export const ProductsProvider = ({ children }: { children: React.ReactNode }) =>
 
     const getProducts = async () => {
         try {
-            const response = await axiosClient.get('/admin/dashboard/products')
+            const response = await axiosClient.get('/api/admin/dashboard/products')
             dispatch({ type: "INITIAL_STATE", payload: response.data.products });
             setLoaded(true);
         } catch (error) {

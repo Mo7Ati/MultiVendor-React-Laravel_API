@@ -36,7 +36,7 @@ export default function RolesProvider({ children }: { children: React.ReactNode 
 
     const getRoles = async () => {
         try {
-            const response = await axiosClient.get("/admin/dashboard/roles");
+            const response = await axiosClient.get("/api/admin/dashboard/roles");
             dispatch({ type: "INITIAL_STATE", payload: response.data });
             setLoaded(true);
         } catch (error) {

@@ -33,7 +33,7 @@ export const DashboardAuthProvider = ({ children }: { children: ReactElement }) 
 
     const fetchUser = useCallback(() => {
         setLoaded(false);
-        axiosClient.get('/admin')
+        axiosClient.get('/api/admin')
             .then(response => {
                 setUser(response.data.user);
                 setPermissions(response.data.permissions);

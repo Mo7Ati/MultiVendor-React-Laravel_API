@@ -50,7 +50,7 @@ export default function CreateStore() {
     });
 
     const handleSubmit = () => {
-        axiosClient.post('/admin/dashboard/stores', data, {
+        axiosClient.post('/api/admin/dashboard/stores', data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

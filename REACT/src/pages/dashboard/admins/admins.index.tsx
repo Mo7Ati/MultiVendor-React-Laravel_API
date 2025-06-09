@@ -130,7 +130,7 @@ export default function AdminsIndex() {
                                             {
                                                 can('delete-admins') && (
                                                     <Button color="danger" variant="outlined" onClick={e => {
-                                                        axiosClient.delete(`/admin/dashboard/admins/${record.id}`).then(_ => {
+                                                        axiosClient.delete(`/api/admin/dashboard/admins/${record.id}`).then(_ => {
                                                             dispatch({ type: "DELETE_ADMIN", payload: Number(record.id) });
                                                             setFlashMessage("Admin Deleted Successfully");
                                                         })

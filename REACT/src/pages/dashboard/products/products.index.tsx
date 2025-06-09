@@ -125,7 +125,7 @@ export default function ProductsIndex() {
                                             {
                                                 can('delete  products') && (
                                                     <Button color="danger" variant="outlined" onClick={e => {
-                                                        axiosClient.delete(`/admin/dashboard/products/${record.id}`)
+                                                        axiosClient.delete(`/api/admin/dashboard/products/${record.id}`)
                                                             .then(_ => {
                                                                 dispatch({ type: 'DELETE_PRODUCT', payload: record.id });
                                                                 setFlashMessage("Product Deleted Successfully");

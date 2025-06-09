@@ -32,7 +32,7 @@ export default function EditRole() {
         abilities: '',
     })
     const handleSubmit = () => {
-        axiosClient.put(`/admin/dashboard/roles/${role.id}`, role).then(res => {
+        axiosClient.put(`/api/admin/dashboard/roles/${role.id}`, role).then(res => {
             dispatch({ type: "UPDATE_ROLE", payload: res.data });
             setFlashMessage('Role Updated Successfully');
             navigate('/admin/dashboard/roles');

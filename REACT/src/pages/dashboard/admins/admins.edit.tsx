@@ -61,7 +61,7 @@ export default function EditAdmin(props: any) {
     })
 
     const handleSubmit = () => {
-        axiosClient.put(`/admin/dashboard/admins/${admin.id}`, admin).then(response => {
+        axiosClient.put(`/api/admin/dashboard/admins/${admin.id}`, admin).then(response => {
             dispatch({ type: "UPDATE_ADMIN", payload: response.data });
             setFlashMessage("Admin Updated Successfully");
             navigate('/admin/dashboard/admins');

@@ -122,7 +122,7 @@ export default function CategoriesIndex() {
                                                 can('delete-categories') &&
                                                 (
                                                     <Button color="danger" variant="outlined" onClick={e => {
-                                                        axiosClient.delete(`/admin/dashboard/categories/${record.id}`)
+                                                        axiosClient.delete(`/api/admin/dashboard/categories/${record.id}`)
                                                             .then(_ => {
                                                                 dispatch({ type: 'DELETE_CATEGORY', payload: record.id })
                                                                 setFlashMessage("Category Deleted Successfully");

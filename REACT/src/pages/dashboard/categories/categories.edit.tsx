@@ -58,7 +58,7 @@ export default function EditCategory(props: any) {
 
 
     const handleSubmit = () => {
-        axiosClient.post(`/admin/dashboard/categories/${params.id}`, data, {
+        axiosClient.post(`/api/admin/dashboard/categories/${params.id}`, data, {
             headers: { 'Content-Type': 'multipart/form-data', }
         }).then(response => {
             dispatch({ type: "UPDATE_CATEGORY", payload: response.data });

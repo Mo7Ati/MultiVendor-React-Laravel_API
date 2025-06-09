@@ -48,7 +48,7 @@ export default function CreateRole() {
     console.log(role);
 
     const handleSubmit = () => {
-        axiosClient.post('/admin/dashboard/roles', role)
+        axiosClient.post('/api/admin/dashboard/roles', role)
             .then(res => {
                 dispatch({ type: "ADD_ROLE", payload: res.data });
                 setFlashMessage('Role Created Successfully');

@@ -28,7 +28,7 @@ export const StoresProvider = ({ children }: { children: React.ReactNode }) => {
 
     const getStores = async () => {
         try {
-            const response = await axiosClient.get('/admin/dashboard/stores')
+            const response = await axiosClient.get('/api/admin/dashboard/stores')
             dispatch({ type: "INITIAL_STATE", payload: response.data.stores });
             setLoaded(true);
         } catch (error) {

@@ -86,7 +86,7 @@ export default function EditProduct(props: any) {
 
 
     const handleSubmit = () => {
-        axiosClient.post(`/admin/dashboard/products/${params.id}`, product, {
+        axiosClient.post(`/api/admin/dashboard/products/${params.id}`, product, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

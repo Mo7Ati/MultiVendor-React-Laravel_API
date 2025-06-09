@@ -28,7 +28,7 @@ export const CategoriesProvider = ({ children }: { children: React.ReactNode }) 
 
     const getCategories = async () => {
         try {
-            const response = await axiosClient.get('/admin/dashboard/categories')
+            const response = await axiosClient.get('/api/admin/dashboard/categories')
             dispatch({ type: "INITIAL_STATE", payload: response.data.categories });
             setLoaded(true);
         } catch (error) {

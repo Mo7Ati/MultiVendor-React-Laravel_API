@@ -96,7 +96,7 @@ export default function StoresIndex() {
                                             {
                                                 can('delete stores') && (
                                                     <Button color="danger" variant="outlined" onClick={e => {
-                                                        axiosClient.delete(`/admin/dashboard/stores/${record.id}`)
+                                                        axiosClient.delete(`/api/admin/dashboard/stores/${record.id}`)
                                                             .then(_ => {
                                                                 dispatch({ type: "DELETE_STORE", payload: record.id });
                                                                 setFlashMessage("Store Deleted Successfully");

@@ -66,7 +66,7 @@ export default function CreateAdmin() {
     })
 
     const handleSubmit = () => {
-        axiosClient.post('/admin/dashboard/admins', admin).then(response => {
+        axiosClient.post('/api/admin/dashboard/admins', admin).then(response => {
             dispatch({ type: "ADD_ADMIN", payload: response.data });
             setFlashMessage("Admin Created Successfully");
             navigate('/admin/dashboard/admins');

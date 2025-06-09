@@ -35,7 +35,7 @@ export default function AdminsProvider({ children }: { children: React.ReactNode
 
     const getAdmins = async () => {
         try {
-            const response = await axiosClient.get("/admin/dashboard/admins");
+            const response = await axiosClient.get("/api/admin/dashboard/admins");
             dispatch({ type: "INITIAL_STATE", payload: response.data.admins });
             setLoaded(true);
         } catch (error) {

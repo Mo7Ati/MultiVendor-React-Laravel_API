@@ -8,8 +8,6 @@ use App\Http\Controllers\front\paymentsController;
 use App\Http\Controllers\Front\ProductController;
 use Illuminate\Support\Facades\Route;
 
-
-
 Route::get('/', function () {
     return view('front.index');
 })->name('home');

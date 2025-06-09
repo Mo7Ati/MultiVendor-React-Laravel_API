@@ -60,7 +60,7 @@ export default function EditStore(props: any) {
 
 
     const handleSubmit = () => {
-        axiosClient.post(`/admin/dashboard/stores/${params.id}`, store, {
+        axiosClient.post(`/api/admin/dashboard/stores/${params.id}`, store, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

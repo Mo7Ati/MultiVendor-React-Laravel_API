@@ -61,7 +61,7 @@ export default function CreateCategory() {
         });
 
     const handleSubmit = () => {
-        axiosClient.post('/admin/dashboard/categories', data, {
+        axiosClient.post('/api/admin/dashboard/categories', data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

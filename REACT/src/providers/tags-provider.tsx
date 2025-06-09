@@ -25,7 +25,7 @@ export const tagsContext = createContext<ITagContext>(
 export const TagsProvider = ({ children }: { children: React.ReactNode }) => {
     const getTags = async () => {
         try {
-            const response = await axiosClient.get('/admin/dashboard/tags')
+            const response = await axiosClient.get('/api/admin/dashboard/tags')
             dispatch({ type: "INITIAL_STATE", payload: response.data.tags });
             setTagsLoaded(true);
         } catch (error) {

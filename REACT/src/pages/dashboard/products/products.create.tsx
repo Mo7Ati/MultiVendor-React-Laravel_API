@@ -79,7 +79,7 @@ export default function CreateProduct() {
 
     console.log(data);
     const handleSubmit = () => {
-        axiosClient.post('/admin/dashboard/products', data, {
+        axiosClient.post('/api/admin/dashboard/products', data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
