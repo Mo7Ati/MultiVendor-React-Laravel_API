@@ -23,6 +23,8 @@ interface Iprops {
     },
     flash: { message: string },
 }
+
+
 export default function CategoriesIndex() {
     const { categories, categoriesLoaded, flashMessage, setLoaded, dispatch, getCategories, setFlashMessage } = useContext(categoriesContext);
     const can = usePermissions();
@@ -46,7 +48,7 @@ export default function CategoriesIndex() {
             setFlashMessage('');
         }
     }, [flashMessage, messageApi]);
-
+    console.log(categories);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -67,31 +69,32 @@ export default function CategoriesIndex() {
                     )
                 }
                 <Table<CategoryType> dataSource={categories} rowKey="id" loading={!categoriesLoaded} >
-                    <Column title="Image" render={(_: any, record: CategoryType) => (
+                    {/* <Column title="Image" render={(_: any, record: CategoryType) => (
                         <Image
                             height={80}
                             width={100}
                             src={record.image_url}
                         />
-                    )} />
+                    )} /> */}
 
                     <Column title="Name"
                         render={(_: any, record: CategoryType) => (
-                            <Link to={`categories/${record.id}`}>{record.name}</Link>
-                        )} />
-
-                    <Column
-                        title="Parent"
-                        render={(_: any, record: CategoryType) => (
                             <>
-                                {
-                                    record.parent ? record.parent.name : ''
-                                }
+                                <div><span>EN: </span>{record.name.en}</div>
+                                <div><span>AR: </span>{record.name.ar}</div>
                             </>
                         )}
+
                     />
-                    <Column title="Status" dataIndex="status" />
-                    <Column title="Description" dataIndex="description" width={'500px'} />
+
+                    <Column title="Active" dataIndex="is_active" />
+                    <Column title="Description"
+                        render={(_: any, record: CategoryType) => (
+                            <>
+                                <div><span>EN: </span>{record.description?.en}</div>
+                                <div><span>AR: </span>{record.description?.ar}</div>
+                            </>
+                        )} width={'500px'} />
 
                     {
                         (can('delete-categories') || can('update-categories'))

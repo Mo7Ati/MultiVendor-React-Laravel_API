@@ -12,16 +12,20 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->json('name');
+            $table->json('description')->nullable();
+
             $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
-            $table->string('slug');//->unique();
-            $table->text('description')->nullable();
-            $table->text('image')->nullable();
-            $table->float('price');
-            $table->float('compare_price')->nullable();
-            $table->enum('status', ['active', 'archived'])->default('archived');
+
+            $table->double('price');
+            $table->double('compare_price')->nullable();
+
+
+            $table->boolean('is_active')->default(true);
+
             $table->unsignedSmallInteger('quantity')->default(0);
+
             $table->json('options')->nullable();
             $table->float('rating')->default(0);
             $table->boolean('featured')->default(0);

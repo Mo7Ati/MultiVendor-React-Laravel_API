@@ -5,28 +5,39 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
 
-class Store extends Model
+class Store extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, HasTranslations, InteractsWithMedia;
 
     protected $fillable = [
         'name',
-        'logo_image',
+        'address',
         'description',
-        'slug',
-        'status',
+        'keywords',
+        'social_media',
+        'email',
+        'phone',
+        'password',
+        'is_active',
+        'rate',
     ];
+
+    protected $casts = [
+        'name' => 'array',
+        'address' => 'array',
+        'description' => 'array',
+        'keywords' => 'array',
+        'social_media' => 'array',
+    ];
+
+    public array $translatable = ['name', 'description', 'address', 'keywords'];
     protected $appends = [
         'logo_url',
     ];
-
-    protected static function booted()
-    {
-        static::creating(function (Store $store) {
-            $store->slug = Str::slug($store->name);
-        });
-    }
 
     public function products()
     {

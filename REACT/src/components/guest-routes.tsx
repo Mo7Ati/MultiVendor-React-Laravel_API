@@ -2,6 +2,7 @@ import { DashboardAuthContext } from '@/providers/dashboard-provider';
 import { Spin } from 'antd';
 import React, { use, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom';
+import { Loader } from './loader';
 
 
 export const Guest = () => {
@@ -13,6 +14,6 @@ export const Guest = () => {
         }
     }, [user, loaded]);
 
-    return (!user && loaded) ? <Outlet /> : <Spin fullscreen />;
+    return (!user && loaded) ? <Outlet /> : <Loader />;
 }
 

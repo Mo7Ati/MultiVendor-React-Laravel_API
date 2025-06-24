@@ -23,11 +23,15 @@ class CategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'image' => ['nullable', 'image'],
-            'status' => ['required', 'in:active,archived'],
+            'name' => ['required', 'array'],
+            'name.en' => ['required', 'string'],
+            'name.ar' => ['required', 'string'],
+            
+            'description' => ['required', 'array'],
+            'description.en' => ['required', 'string'],
+            'description.ar' => ['required', 'string'],
+            // 'image' => ['nullable', 'image'],
+            // 'is_active' => ['required', 'in:active,archived'],
         ];
     }
     public function messages()

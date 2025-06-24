@@ -1,3 +1,5 @@
+import { Url } from "url";
+
 export enum EStatus {
     ACTIVE = 'active',
     ARCHIVED = 'archived',
@@ -9,14 +11,11 @@ export enum EAbilityType {
 
 export type CategoryType = {
     id?: number;
-    name: string;
-    description: string;
+    name: { ar: string, en: string };
+    description: { ar: string, en: string };
+    is_active: boolean,
     image: any;
-    image_url: any;
-    status: EStatus;
-    parent: CategoryType | null;
-    parent_id: number | string | null;
-    removeImage: boolean;
+    media: any;
     _method?: string;
 }
 
@@ -38,17 +37,36 @@ export type ProductType = {
     removeImage?: boolean;
     _method?: string;
 }
-
 export type StoreType = {
     id?: number;
-    name: string;
-    logo_image: any;
-    logo_url: string;
-    description: string;
-    status: EStatus;
+    name: {
+        en: string;
+        ar: string;
+    };
+    address: {
+        en: string;
+        ar: string;
+    };
+    description: {
+        en: string;
+        ar: string;
+    };
+    keywords: {
+        en: string;
+        ar: string;
+    };
+    social_media: { platform: string, url: string };
+
+    email: string;
+    phone: string;
+    password: string;
+
+    is_active: boolean;
+    rate: number;
+
     _method?: 'PUT' | 'POST';
-    removeImage?: boolean;
-}
+};
+
 
 export type TagType = {
     id?: number,

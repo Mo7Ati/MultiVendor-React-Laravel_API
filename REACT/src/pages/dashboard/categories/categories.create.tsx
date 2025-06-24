@@ -5,9 +5,11 @@ import {
     Image,
     Button,
     Form,
-    Select,
-    Radio,
     Upload,
+    Tabs,
+    Card,
+    TabsProps,
+    Checkbox,
 } from 'antd';
 import TextArea from "antd/es/input/TextArea";
 import { CategoryType, EStatus } from "@/types/dashboard";
@@ -50,20 +52,17 @@ export default function CreateCategory() {
 
     const [data, setData] = useState<CategoryType>(
         {
-            name: '',
-            description: '',
+            name: { 'ar': '', 'en': '' },
+            description: { 'ar': '', 'en': '' },
             image: '',
-            image_url: '',
-            status: EStatus.ACTIVE,
-            parent_id: null,
-            parent: null,
-            removeImage: false,
+            is_active: true,
+            media: null,
         });
 
     const handleSubmit = () => {
         axiosClient.post('/api/admin/dashboard/categories', data, {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                'Content-Type': 'application/json',
             },
         }).then(res => {
             dispatch({ type: "ADD_CATEGORY", payload: res.data });
@@ -73,6 +72,61 @@ export default function CreateCategory() {
             console.log(res.response.data.errors);
         }))
     }
+
+    const items: TabsProps['items'] =
+        [{ code: 'en', label: 'EN' }, { code: 'ar', label: 'AR' }].map(locale =>
+        (
+            {
+                key: locale.code,
+                label: locale.label,
+                children: (
+                    <>
+                        <Form.Item
+                            name={`name-${locale.code}`}
+                            label="Name"
+                            help={
+                                errors.name && (
+                                    <span className="ml-5 text-red-450 text-sm font-medium">
+                                        {errors.name}
+                                    </span>
+                                )
+                            }
+                            validateStatus={errors.name && 'error'}
+                        >
+                            <Input
+                                // value={data?.name}
+                                onChange={(e) => {
+                                    setData({ ...data, name: { ...data.name, [locale.code]: e.currentTarget.value } });
+                                }}
+                            />
+
+                        </Form.Item>
+                        <Form.Item
+                            name={`description-${locale.code}`}
+                            label={'description'}
+                            help={
+                                errors.description && (
+                                    <span className="ml-5 text-red-450 text-sm font-medium">
+                                        {errors.description}
+                                    </span>
+                                )
+                            }
+                            validateStatus={errors.description ? 'error' : ''}>
+                            <TextArea
+                                rows={4}
+                                // value={data.description}
+                                onChange={
+                                    e => {
+                                        setData({ ...data, description: { ...data.description, [locale.code]: e.currentTarget.value } })
+                                    }
+                                }
+                            />
+                        </Form.Item>
+                    </>
+                )
+            }
+        ));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
@@ -80,138 +134,63 @@ export default function CreateCategory() {
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 14 }}
                     layout="horizontal"
-                    style={{ maxWidth: 800 }}
                     onFinish={handleSubmit}
                 >
-                    <Form.Item label="Name"
-                        help={
-                            errors.name && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.name}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.name && 'error'}
+
+                    <Card
+                        title="Category  Information"
                     >
-                        <Input
-                            value={data?.name}
-                            onChange={(e) => {
-                                setData({ ...data, name: e.currentTarget.value });
-                            }}
-                        />
+                        <Tabs defaultActiveKey="1" items={items} />
+                    </Card>
+                    <br />
 
-                    </Form.Item>
-                    <Form.Item label="Category"
-                        help={
-                            errors.parent_id && (
-                                <span className="ml-5  text-red-450  text-sm font-medium">
-                                    {errors.parent_id}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.parent_id ? 'error' : ''}
+                    <Card
+                        title="Category Status"
                     >
-                        <Select
-                            value={data.parent_id ?? ''}
-                            onChange={(value) => {
-                                setData({ ...data, parent_id: value, parent: categories.find(cat => cat.id === Number(value))! });
-                            }}>
-                            <Select.Option value={''} >Main Category</Select.Option>
-                            {
-                                (categories).map(category => (
-                                    <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
-                                ))
+                        <Form.Item
+                            help={
+                                errors.status && (
+                                    <span className="ml-5 text-red-450 text-sm font-medium">
+                                        {errors.status}
+                                    </span>
+                                )
                             }
-                        </Select>
-                    </Form.Item>
+                            validateStatus={errors.status ? 'error' : ''}
+                        >
+                            <Checkbox style={{ marginLeft: 170 }} onChange={(e) => setData({ ...data, is_active: e.target.checked })}>Active</Checkbox>
+                        </Form.Item>
 
-                    <Form.Item label="Description"
-                        help={
-                            errors.description && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.description}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.description ? 'error' : ''}>
-                        <TextArea
-                            rows={4}
-                            value={data.description}
-                            onChange={
-                                e => {
-                                    setData({ ...data, description: e.currentTarget.value })
-                                }
+                        <Form.Item label="logo"
+                            help={
+                                errors.image && (
+                                    <span className="ml-5  text-red-450 text-sm font-medium">
+                                        {/* {errors.image.ss!} */}
+                                    </span>
+                                )
                             }
-                        />
-                    </Form.Item>
+                            validateStatus={'error'} >
 
-
-                    <Form.Item label="logo"
-                        help={
-                            errors.image && (
-                                <span className="ml-5  text-red-450 text-sm font-medium">
-                                    {/* {errors.image.ss!} */}
-                                </span>
-                            )
-                        }
-                        validateStatus={'error'} >
-
-                        <div className="flex flex-row items-center gap-10 ml-3">
-                            <div className="flex flex-col gap-3">
-                                <Upload
-                                    beforeUpload={(value) => {
-                                        setData({ ...data, image: value });
-                                        setDisplayImage(false);
-                                        return false;
-                                    }}
-                                    onRemove={() => { setDisplayImage(true) }}
-                                    listType="text"
-                                    maxCount={1}
-                                >
-                                    <Button icon={<UploadOutlined />}>
-                                        Upload Logo
-                                    </Button>
-                                </Upload>
+                            <div className="flex flex-row items-center gap-10 ml-3">
+                                <div className="flex flex-col gap-3">
+                                    <Upload
+                                        beforeUpload={(value) => {
+                                            setData({ ...data, image: value });
+                                            setDisplayImage(false);
+                                            return false;
+                                        }}
+                                        onRemove={() => { setDisplayImage(true) }}
+                                        listType="text"
+                                        maxCount={1}
+                                    >
+                                        <Button icon={<UploadOutlined />}>
+                                            Upload Logo
+                                        </Button>
+                                    </Upload>
+                                </div>
                             </div>
-                        </div>
-                    </Form.Item>
+                        </Form.Item>
 
-
-                    <Form.Item label="Status"
-                        help={
-                            errors.status && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.status}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.status ? 'error' : ''}
-                    >
-                        <Radio.Group defaultValue={'active'}>
-                            <Radio
-                                value="active"
-                                name="status"
-                                onChange={
-                                    e => {
-                                        setData({ ...data, status: e.target.value })
-                                    }
-                                }
-                            >
-                                Active
-                            </Radio>
-                            <Radio
-                                value="archived"
-                                name="status"
-                                onChange={
-                                    e => {
-                                        setData({ ...data, status: e.target.value });
-                                    }
-                                }
-                            >
-                                Archived
-                            </Radio>
-                        </Radio.Group>
-                    </Form.Item>
+                    </Card>
                     <Form.Item >
                         <div className="flex gap-10 mt-5">
                             <Button color="primary" className="ml-20" htmlType="submit" variant="outlined">

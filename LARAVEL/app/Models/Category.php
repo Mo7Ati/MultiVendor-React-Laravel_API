@@ -7,17 +7,19 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-class Category extends Model
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
+class Category extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia, HasTranslations;
     protected $fillable = [
         'name',
-        'image',
-        'parent_id',
         'description',
-        'slug',
-        'status',
+        'is_active',
     ];
+
+    public array $translatable = ['name', 'description'];
 
     protected $appends = [
         'image_url',
@@ -26,18 +28,10 @@ class Category extends Model
     protected function casts(): array
     {
         return [
-            'parent_id' => 'integer' ,
+            'name' => 'array',
+            'description' => 'array',
         ];
     }
-
-    protected static function booted()
-    {
-        static::creating(function (Category $category) {
-            $slug = Str::slug($category->name);
-            $category->slug = $slug;
-        });
-    }
-
     public function parent()
     {
         return $this->belongsTo(Category::class, 'parent_id', 'id');
@@ -62,15 +56,14 @@ class Category extends Model
 
     public function getImageUrlAttribute()
     {
-        $image = $this->image;
+        $image = $this->getFirstMediaUrl('categories');
+
         if (!$image) {
             return 'https://www.incathlab.com/images/products/default_product.png';
         }
 
         if (Str::startsWith($image, ['http', 'https'])) {
-            return $image;
+            return asset($image);
         }
-
-        return asset('storage/' . $image);
     }
 }

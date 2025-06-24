@@ -40,9 +40,6 @@ export const DashboardAuthProvider = ({ children }: { children: ReactElement }) 
             }).finally(() => setLoaded(true));
     }, [user, loaded]);
 
-
-
-
     return (
         < DashboardAuthContext.Provider value={
             {

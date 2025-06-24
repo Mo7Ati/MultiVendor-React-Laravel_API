@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\FileHandlerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\CategoriesController;
@@ -10,9 +11,11 @@ use App\Http\Controllers\Dashboard\TagsController;
 use App\Http\Controllers\Dashboard\UserController;
 
 
+Route::post('image', [FileHandlerController::class, 'store']);
+
 Route::get('/admin', function (Request $request) {
     $admin = Auth::guard('admin')->user();
-    return ['user' => $admin, 'permissions' => $admin->permissions()];
+    return ['user' => $admin, ];//'permissions' => $admin->permissions()
 })->middleware('auth:admin');
 
 

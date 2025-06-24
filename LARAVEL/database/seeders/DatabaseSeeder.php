@@ -20,9 +20,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        Category::factory(5)->create();
-        Store::factory(10)->create();
-        Product::factory(20)->create();
+        // Category::factory(5)->create();
+        // Store::factory(10)->create();
+        // Product::factory(20)->create();
 
 
         // User::factory()->create([
@@ -35,9 +35,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@ps.com',
             'password' => Hash::make('password'),
-            'username' => 'Admin',
-            'phone_number' => '0592381441',
-            'super_admin' => '1',
         ]);
     }
 }
