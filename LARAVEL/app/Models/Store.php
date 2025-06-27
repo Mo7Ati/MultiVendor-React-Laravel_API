@@ -35,24 +35,16 @@ class Store extends Model implements HasMedia
     ];
 
     public array $translatable = ['name', 'description', 'address', 'keywords'];
-    protected $appends = [
-        'logo_url',
-    ];
+    // protected $appends = [
+    //     'logo',
+    // ];
 
     public function products()
     {
         return $this->hasMany(Product::class, 'store_id', 'id');
     }
-    protected function getLogoUrlAttribute()
-    {
-        $image = $this->logo_image;
-        if (!$image) {
-            return "https://www.incathlab.com/images/products/default_product.png";
-        }
-        if (Str::startsWith($image, ['http://', 'https://'])) {
-            return $image;
-        }
-        return asset('storage/' . $image);
-
-    }
+    // protected function getLogoUrlAttribute()
+    // {
+    //     return $this->getFirstMedia('store_logo');
+    // }
 }

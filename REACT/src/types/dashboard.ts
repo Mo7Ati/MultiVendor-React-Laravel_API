@@ -39,6 +39,9 @@ export type ProductType = {
 }
 export type StoreType = {
     id?: number;
+    media: {
+        original_url?: string,
+    }[],
     name: {
         en: string;
         ar: string;
@@ -60,11 +63,10 @@ export type StoreType = {
     email: string;
     phone: string;
     password: string;
-
+    logo: string;
+    gallery: string[];
     is_active: boolean;
     rate: number;
-
-    _method?: 'PUT' | 'POST';
 };
 
 

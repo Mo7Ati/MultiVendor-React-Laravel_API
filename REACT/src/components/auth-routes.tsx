@@ -7,7 +7,6 @@ import { Loader } from './loader';
 
 const Auth = () => {
     const { user, loaded } = useContext(DashboardAuthContext);
-    console.log(user, loaded);
 
     const navigate = useNavigate();
 
@@ -20,5 +19,4 @@ const Auth = () => {
     return (loaded && user) ? <Outlet /> : <Loader />
 
 }
-//  : <Spin fullscreen />
 export default Auth;

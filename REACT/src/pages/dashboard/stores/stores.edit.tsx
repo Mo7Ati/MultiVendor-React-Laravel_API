@@ -1,229 +1,372 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import React, { use, useContext, useEffect, useState } from 'react';
-import { UploadOutlined } from '@ant-design/icons';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     Input,
-    Image,
     Button,
     Form,
     Radio,
     Upload,
+    TabsProps,
+    Card,
+    Tabs,
+    Checkbox,
+    Tag,
+    Select,
+    Flex,
+    Row,
+    Col,
     Spin,
-
+    message,
+    Image
 } from 'antd';
 import TextArea from "antd/es/input/TextArea";
 import { EStatus, StoreType } from "@/types/dashboard";
 import axiosClient from "@/axios-client";
 import { useNavigate, useParams } from "react-router-dom";
+import UploadOutlined from "@ant-design/icons/lib/icons/UploadOutlined";
 import { storesContext } from "@/providers/stores-provider";
+import { useTranslation } from 'react-i18next';
+import { Loader } from "@/components/loader";
+import { FilePond } from "react-filepond";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Stores',
-        href: '/stores',
+        title: 'Dashboard',
+        href: '/admin/dashboard',
     },
+    {
+        title: 'Stores',
+        href: '/admin/dashboard/stores',
+    },
+    {
+        title: 'Edit Store',
+        href: '/admin/dashboard/stores/edit',
+    }
 ];
 
-export default function EditStore(props: any) {
-    const [displayImage, setDisplayImage] = useState<boolean>(true)
+// Extended StoreType for form handling
+type ExtendedStoreType = StoreType & {
+    logo_image?: any;
+    gallery_image?: any;
+    removeImage?: boolean;
+    logo_url?: string;
+};
+
+export default function EditStore() {
     const { stores, loaded, getStores, setFlashMessage, dispatch } = useContext(storesContext);
+    const { t } = useTranslation();
     const params = useParams();
     const navigate = useNavigate();
-    const [errors, setErrors] = useState({
-        name: '',
-        description: '',
-        logo_image: '',
-        status: '',
-    });
+    const [messageApi, contextHolder] = message.useMessage();
 
-    const [store, setStore] = useState<StoreType>(stores.find(store => store.id === Number(params.id))!);
-    const [image, setImage] = useState(stores.find(store => store.id === Number(params.id))?.logo_image!);
+    const [displayImage, setDisplayImage] = useState<boolean>(true);
+    const [loading, setLoading] = useState(false);
+
+    function getCookie(name: string) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    const currentStore = stores.find(store => store.id === Number(params.id)) as ExtendedStoreType;
+
+    const [store, setStore] = useState<ExtendedStoreType>({
+        name: {
+            en: '',
+            ar: '',
+        },
+        address: {
+            en: '',
+            ar: '',
+        },
+        description: {
+            en: '',
+            ar: '',
+        },
+        keywords: {
+            en: '',
+            ar: '',
+        },
+        social_media: { platform: '', url: '' },
+        email: '',
+        phone: '',
+        password: '',
+        logo: '',
+        gallery: [],
+        is_active: true,
+        rate: 1,
+    });
 
 
     useEffect(() => {
-        if (!loaded) {
+        if (!loaded && !currentStore) {
             getStores();
         }
     }, []);
 
     useEffect(() => {
-        setImage(stores.find(store => store.id === Number(params.id))?.logo_image!)
-        setStore({
-            ...stores.find(store => store.id === Number(params.id))!,
-            logo_image: '',
-            _method: 'PUT',
-        });
-    }, [loaded])
-
-
-
+        if (currentStore && loaded) {
+            setStore({
+                ...currentStore,
+                password: '', 
+            });
+        }
+    }, [currentStore, loaded]);
 
     const handleSubmit = () => {
-        axiosClient.post(`/api/admin/dashboard/stores/${params.id}`, store, {
+        setLoading(true);
+
+        // Prepare store for update
+        const updateData = {
+            ...store,
+            _method: 'PUT',
+        };
+
+        axiosClient.post(`/api/admin/dashboard/stores/${params.id}`, updateData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         }).then(res => {
             dispatch({ type: 'UPDATE_STORE', payload: res.data });
-            setFlashMessage("Store Updated Successfully");
+            setFlashMessage(t('stores.storeUpdated'));
+            messageApi.open({
+                type: 'success',
+                content: t('stores.storeUpdated'),
+            });
             navigate("/admin/dashboard/stores");
-        }).catch((res => {
-            setErrors(res.response.data.errors);
-        }))
+        }).catch((res) => {
+            messageApi.open({
+                type: 'error',
+                content: t('common.error'),
+            });
+        }).finally(() => {
+            setLoading(false);
+        });
+    };
+
+    const items: TabsProps['items'] =
+        [{ code: 'en', label: 'English' }, { code: 'ar', label: 'عربي' }].map(locale =>
+        (
+            {
+                key: locale.code,
+                label: locale.label,
+                children: (
+                    store && <>
+                        <Form.Item label="Name" labelCol={{ span: 7 }}>
+                            <Input
+                                value={store.name?.[locale.code as keyof typeof store.name] || ''}
+                                onChange={(e) => {
+                                    setStore({ ...store, name: { ...store.name, [locale.code]: e.currentTarget.value } });
+                                }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'Description'}
+                            labelCol={{ span: 7 }}
+                        >
+                            <TextArea
+                                rows={4}
+                                value={store.description?.[locale.code as keyof typeof store.description] || ''}
+                                onChange={e => {
+                                    setStore({ ...store, description: { ...store.description, [locale.code]: e.currentTarget.value } })
+                                }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'Address'}
+                            labelCol={{ span: 7 }}
+                        >
+                            <Input
+                                value={store.address?.[locale.code as keyof typeof store.address] || ''}
+                                onChange={e => {
+                                    setStore({ ...store, address: { ...store.address, [locale.code]: e.currentTarget.value } })
+                                }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label={'Keywords'}
+                            labelCol={{ span: 7 }}
+                        >
+                            <Select
+                                mode="tags"
+                                style={{ width: '100%' }}
+                                value={store.keywords?.[locale.code as keyof typeof store.keywords] || []}
+                                onChange={(value) => {
+                                    setStore({ ...store, keywords: { ...store.keywords, [locale.code]: value } })
+                                }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item label={t('stores.form.socialMedia')} labelCol={{ span: 7 }}>
+                            <Input
+                                value={store.social_media?.[locale.code as keyof typeof store.social_media] || ''}
+                                onChange={e => {
+                                    setStore({ ...store, social_media: { ...store.social_media, [locale.code]: e.currentTarget.value } })
+                                }}
+                            />
+                        </Form.Item>
+                    </>
+                )
+            }
+        ));
+
+    if (!loaded || !store) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <div className="flex justify-center items-center h-64">
+                    <Loader />
+                </div>
+            </AppLayout>
+        );
     }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {/* <Head title="Categories" /> */}
+            {contextHolder}
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {loaded ? <Form
+                <Form
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 14 }}
                     layout="horizontal"
-                    style={{ maxWidth: 800 }}
+                    style={{ maxWidth: '100%' }}
                     onFinish={handleSubmit}
                 >
-                    <Form.Item label="Store Name"
-                        help={
-                            errors.name && (
-                                <span className="ml-5  text-red-450 text-sm font-medium">
-                                    {errors.name}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.name && 'error'}
-                    >
-                        <Input
-                            value={store.name}
-                            onChange={(e) => {
-                                errors.name = '';
-                                setStore({ ...store, name: e.currentTarget.value })
-                            }}
-                        />
+                    <Row>
+                        <Col span={12}>
+                            <Card title={t('stores.form.storeInformation')} type="inner">
+                                <Tabs defaultActiveKey="1" items={items} />
+                                <br />
+                            </Card>
+                        </Col>
 
-                    </Form.Item>
+                        <Col span={10} offset={1}>
+                            <Card title={t('stores.form.storeCredentials')} type="inner">
 
-                    <Form.Item label="Description"
-                        help={
-                            errors.description && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.description}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.description ? 'error' : ''} >
-                        <TextArea
-                            rows={3}
-                            value={store.description}
-                            onChange={e => {
-                                errors.description = '';
-                                setStore({ ...store, description: e.currentTarget.value })
-                            }
-                            }
-                        />
-                    </Form.Item>
 
-                    <Form.Item label="logo"
-                        help={
-                            errors.logo_image && (
-                                <span className="ml-5  text-red-450 text-sm font-medium">
-                                    {errors.logo_image}
-                                </span>
-                            )
-                        }>
-
-                        <div className="flex flex-row items-center gap-10 ml-3">
-                            {
-                                (image && displayImage) && (
-                                    <Image
-                                        height={80}
-                                        width={100}
-                                        src={store.logo_url}
-                                    />
-                                )
-                            }
-                            <div className="flex flex-col gap-3">
-                                <Upload
-                                    beforeUpload={(value) => {
-                                        setStore({ ...store, logo_image: value });
-                                        setDisplayImage(false);
-                                        return false;
-                                    }}
-                                    onRemove={() => { setDisplayImage(true) }}
-                                    listType="text"
-                                    maxCount={1}
+                                <Form.Item
+                                    label={t('stores.columns.email')}
+                                    labelCol={{ span: 6 }}
+                                    rules={[
+                                        { required: true, message: t('stores.validation.emailRequired') },
+                                        { type: 'email', message: t('stores.validation.emailInvalid') },
+                                    ]}
                                 >
-                                    <Button icon={<UploadOutlined />}>
-                                        {
-                                            displayImage ? "Update Logo" : "Upload Logo"
-                                        }
-                                    </Button>
-                                </Upload>
+                                    <Input
+                                        value={store.email}
+                                        placeholder={t('stores.form.email')}
+                                        onChange={(e) => setStore({ ...store, email: e.currentTarget.value })}
+                                    />
+                                </Form.Item>
 
-                                {
-                                    (image && displayImage) && (
-                                        <Button
-                                            color="red"
-                                            variant="outlined"
-                                            onClick={e => { setDisplayImage(false), setStore({ ...store, removeImage: true }) }}
-                                        >
-                                            Remove Image
-                                        </Button>
-                                    )
-                                }
-                            </div>
-                        </div>
-                    </Form.Item>
+                                <Form.Item
+                                    label={t('stores.form.phone')}
+                                    labelCol={{ span: 6 }}
+                                    rules={[
+                                        { required: true, message: t('stores.validation.phoneRequired') },
+                                        { pattern: /^[0-9]{10,15}$/, message: t('stores.validation.phoneInvalid') },
+                                    ]}
+                                >
+                                    <Input
+                                        value={store.phone}
+                                        placeholder={t('stores.form.phone')}
+                                        onChange={(e) => setStore({ ...store, phone: e.currentTarget.value })}
+                                    />
+                                </Form.Item>
 
-                    <Form.Item label="Status"
-                        help={
-                            errors.status && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {/* {errors.status} */}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.status ? 'error' : ''}
-                    >
-                        <Radio.Group defaultValue={'active'}>
-                            <Radio
-                                value="active"
-                                name="status"
-                                onChange={e => {
-                                    setStore({ ...store, status: e.target.value })
-                                }
-                                }
-                            >
-                                Active
-                            </Radio>
-                            <Radio
-                                value="inactive"
-                                name="status"
-                                onChange={e => {
-                                    setStore({ ...store, status: e.target.value })
-                                }
-                                }
-                            >
-                                Inactive
-                            </Radio>
-                        </Radio.Group>
-                    </Form.Item>
+                                <Form.Item
+                                    label={t('stores.form.password')}
+                                    labelCol={{ span: 6 }}
+                                    help={t('stores.form.passwordHelp')}
+                                >
+                                    <Input.Password
+                                        value={store.password}
+                                        placeholder={t('stores.form.password')}
+                                        onChange={(e) => setStore({ ...store, password: e.currentTarget.value })}
+                                    />
+                                </Form.Item>
+                            </Card>
+                            <br />
+                            <Card title={t('stores.form.storeStatus')} type="inner">
+                                <Form.Item label={t('stores.form.logo')}>
+                                    <FilePond
+                                        allowMultiple={false}
+                                        maxFiles={1}
+                                        name="upload"
+                                        // files={(') => {
 
-                    <Form.Item >
+                                        // }}
+                                        server={{
+                                            process: {
+                                                url: 'http://localhost:8000/api/admin/dashboard/upload',
+                                                headers: {
+                                                    'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')!,
+                                                },
+                                                withCredentials: true,
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item label={t('stores.form.gallery')}>
+                                    <div className="flex flex-row items-center gap-10 ml-3">
+                                        <div className="flex flex-col gap-3">
+                                            <Upload
+                                                beforeUpload={(value) => {
+                                                    setStore({ ...store, gallery_image: value });
+                                                    return false;
+                                                }}
+                                                listType="text"
+                                                maxCount={5}
+                                            >
+                                                <Button icon={<UploadOutlined />}>
+                                                    {t('stores.form.uploadGallery')}
+                                                </Button>
+                                            </Upload>
+                                        </div>
+                                    </div>
+                                </Form.Item>
+
+                                <Form.Item>
+                                    <Checkbox
+                                        checked={store.is_active}
+                                        style={{ marginLeft: 170 }}
+                                        onChange={(e) => setStore({ ...store, is_active: e.target.checked })}
+                                    >
+                                        {t('stores.form.isActive')}
+                                    </Checkbox>
+                                </Form.Item>
+                            </Card>
+                        </Col>
+                    </Row>
+                    <br />
+                    <br />
+                    <Form.Item>
                         <div className="flex gap-10 mt-1">
-                            <Button color="primary" className="ml-20" htmlType="submit" variant="outlined">
-                                Edit
+                            <Button
+                                type="primary"
+                                className="ml-20"
+                                htmlType="submit"
+                                loading={loading}
+                            >
+                                {t('stores.editStore')}
                             </Button>
-                            <Button color="danger" variant="outlined"
+                            <Button
+                                danger
                                 onClick={() => {
                                     navigate('/admin/dashboard/stores');
-                                }}>
-                                Cancel
+                                }}
+                            >
+                                {t('common.cancel')}
                             </Button>
                         </div>
                     </Form.Item>
-                </Form> : <Spin />}
+                </Form>
+
+
             </div>
-        </AppLayout >
+        </AppLayout>
     );
 }

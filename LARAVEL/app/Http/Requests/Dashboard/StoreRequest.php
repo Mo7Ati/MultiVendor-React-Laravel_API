@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Dashboard;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Unique;
+use TijsVerkoyen\CssToInlineStyles\Css\Rule\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -34,19 +36,25 @@ class StoreRequest extends FormRequest
             'description.en' => ['nullable', 'string'],
             'description.ar' => ['nullable', 'string'],
 
+
+
             'keywords' => ['nullable', 'array'],
             'keywords.en' => ['nullable', 'array'],
             'keywords.ar' => ['nullable', 'array'],
 
             'social_Media' => ['nullable', 'array'],
 
-            'email' => ['required', 'email', 'unique:stores,email'],
+            'email' => [
+                'required',
+                'email',
+
+            ],
             'phone' => ['required', 'string', 'unique:stores,phone'],
             'password' => ['required', 'string', 'min:8'],
 
             'is_active' => ['boolean'],
             'rate' => ['numeric', 'min:0'],
-            'logo_image' => ['nullable', 'image'],
+            'logo' => ['nullable', 'string'],
         ];
     }
 }
