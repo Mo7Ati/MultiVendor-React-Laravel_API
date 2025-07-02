@@ -1,39 +1,37 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import {
     Input,
     Button,
     Form,
-    Radio,
-    Upload,
     TabsProps,
     Card,
     Tabs,
     Checkbox,
-    Tag,
     Select,
-    Flex,
     Row,
     Col,
-
 } from 'antd';
 import TextArea from "antd/es/input/TextArea";
-import { EStatus, StoreType } from "@/types/dashboard";
+import { StoreType } from "@/types/dashboard";
 import axiosClient from "@/axios-client";
-import { data, useNavigate } from "react-router-dom";
-import UploadOutlined from "@ant-design/icons/lib/icons/UploadOutlined";
+import { useNavigate } from "react-router-dom";
 import { storesContext } from "@/providers/stores-provider";
 import { useTranslation } from 'react-i18next';
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { FilePond, registerPlugin } from 'react-filepond';
+
+// File Pond  
 import 'filepond/dist/filepond.min.css';
-
-import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 
+
+import { FilePond, registerPlugin } from 'react-filepond';
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+import axios from "axios";
+
+registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -49,21 +47,19 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/admin/dashboard/stores/create',
     }
 ];
+
+
+type CreateStorePageType = StoreType & {
+    logo: string,
+    gallery: string[]
+};
+
 export default function CreateStore() {
     const { dispatch, setFlashMessage } = useContext(storesContext);
+    const navigate = useNavigate();
     const { t } = useTranslation();
 
-    const [errors, setErrors] = useState({
-        name: '',
-        description: '',
-        logo_image: '',
-        status: '',
-    });
-
-    const navigate = useNavigate();
-
-
-    const [data, setData] = useState<StoreType>({
+    const [data, setData] = useState<CreateStorePageType>({
         name: {
             en: '',
             ar: '',
@@ -80,14 +76,21 @@ export default function CreateStore() {
             en: '',
             ar: '',
         },
-        social_media: { platform: '', url: '' },
         logo: '',
-        gallery: [],
+        gallery: [''],
+        social_media: { platform: '', url: '' },
         email: '',
         phone: '',
         password: '',
         is_active: true,
         rate: 1,
+    });
+
+    const [errors, setErrors] = useState({
+        name: '',
+        description: '',
+        logo_image: '',
+        status: '',
     });
 
     const handleSubmit = () => {
@@ -100,11 +103,6 @@ export default function CreateStore() {
         }))
     }
 
-    const clearError = (field: string) => {
-        setErrors(prev => {
-            return { ...errors, [field]: '' };
-        });
-    };
     const items: TabsProps['items'] =
         [{ code: 'en', label: 'English' }, { code: 'ar', label: 'عربي' }].map(locale =>
         (
@@ -165,23 +163,6 @@ export default function CreateStore() {
                 )
             }
         ));
-    const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>();
-
-    const uploadButton = (
-        <button style={{ border: 0, background: 'none' }} type="button">
-            {loading ? <LoadingOutlined /> : <PlusOutlined />}
-            <div style={{ marginTop: 8 }}>Upload</div>
-        </button>
-    );
-
-    function getCookie(name: string) {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
-
-    registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
-
 
     console.log(data);
     return (
@@ -257,31 +238,46 @@ export default function CreateStore() {
                                 maxFiles={1}
                                 name="upload"
                                 server={{
-                                    process: {
-                                        url: 'http://localhost:8000/api/admin/dashboard/upload/stores',
-                                        headers: {
-                                            'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')!,
-                                        },
-                                        withCredentials: true,
-                                        ondata: (formData) => {
-                                            formData.append('collection', 'logos');
-                                            return formData;
-                                        },
-                                        onload: (response) => {
-                                            setData({
-                                                ...data, logo: response
+                                    process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
+                                        const formData = new FormData();
+                                        formData.append(fieldName, file, file.name);
+                                        const source = axios.CancelToken.source();
+
+                                        axiosClient.post('/api/admin/dashboard/upload', formData,
+                                            {
+                                                headers: {
+                                                    'Content-Type': 'multipart/form-data',
+                                                },
+                                                onUploadProgress: (e) => {
+                                                    progress(e.lengthComputable, e.loaded, Number(e.total));
+                                                },
+                                                cancelToken: source.token,
+                                            }).then(response => {
+                                                if (response.status >= 200 && response.status < 300) {
+                                                    setData({
+                                                        ...data, logo: response.data
+                                                    });
+                                                    load(response.data);
+                                                } else {
+                                                    error('oh no');
+                                                }
                                             })
-                                            return response;
-                                        },
+
+                                        return {
+                                            abort: () => {
+                                                // This function is entered if the user has tapped the cancel button
+                                                source.cancel('Upload cancelled by user');
+                                                // Let FilePond know the request has been cancelled
+                                                abort();
+                                            },
+                                        };
                                     },
                                     revert: (uniqueFileId, load, error) => {
                                         const folderName = uniqueFileId;
-                                        const collection = 'logos';
 
-                                        axiosClient.delete('/api/admin/dashboard/upload/stores', {
+                                        axiosClient.delete('/api/admin/dashboard/upload', {
                                             data: {
                                                 folder_name: folderName,
-                                                collection: collection,
                                             },
                                         })
                                             .then((res) => {
@@ -302,32 +298,46 @@ export default function CreateStore() {
                                 allowRevert={true}
                                 name="upload"
                                 server={{
-                                    process: {
-                                        url: 'http://localhost:8000/api/admin/dashboard/upload/stores',
-                                        headers: {
-                                            'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')!,
-                                        },
-                                        withCredentials: true,
-                                        ondata: (formData) => {
-                                            formData.append('collection', 'gallery');
-                                            return formData;
-                                        },
-                                        onload: (response) => {
-                                            setData((prev) => ({
-                                                ...prev,
-                                                gallery: [...prev.gallery, response]
-                                            }));
-                                            return response;
-                                        },
+                                    process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
+                                        const formData = new FormData();
+                                        formData.append(fieldName, file, file.name);
+                                        const source = axios.CancelToken.source();
+
+                                        axiosClient.post('/api/admin/dashboard/upload', formData,
+                                            {
+                                                headers: {
+                                                    'Content-Type': 'multipart/form-data',
+                                                },
+                                                onUploadProgress: (e) => {
+                                                    progress(e.lengthComputable, e.loaded, Number(e.total));
+                                                },
+                                                cancelToken: source.token,
+                                            }).then(response => {
+                                                if (response.status >= 200 && response.status < 300) {
+                                                    setData(prev => {
+                                                        return { ...prev, gallery: [...prev.gallery, response.data] }
+                                                    });
+                                                    load(response.data);
+                                                } else {
+                                                    error('oh no');
+                                                }
+                                            })
+
+                                        return {
+                                            abort: () => {
+                                                // This function is entered if the user has tapped the cancel button
+                                                source.cancel('Upload cancelled by user');
+                                                // Let FilePond know the request has been cancelled
+                                                abort();
+                                            },
+                                        };
                                     },
                                     revert: (uniqueFileId, load, error) => {
                                         const folderName = uniqueFileId;
-                                        const collection = 'gallery';
 
-                                        axiosClient.delete('/api/admin/dashboard/upload/stores', {
+                                        axiosClient.delete('/api/admin/dashboard/upload', {
                                             data: {
                                                 folder_name: folderName,
-                                                collection: collection,
                                             },
                                         })
                                             .then((res) => {

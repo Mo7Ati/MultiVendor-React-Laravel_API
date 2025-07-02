@@ -37,11 +37,35 @@ export type ProductType = {
     removeImage?: boolean;
     _method?: string;
 }
+
+
+export type MediaType = {
+    id?: number;
+    model_type?: string;
+    model_id?: number;
+    uuid?: string;
+    collection_name?: string;
+    name?: string;
+    file_name?: string;
+    mime_type?: string;
+    disk?: string;
+    conversions_disk?: string;
+    size?: number;
+    manipulations?: any;
+    custom_properties?: any;
+    generated_conversions?: {
+        [key: string]: boolean;
+    };
+    responsive_images?: any;
+    order_column?: number;
+    created_at?: string;
+    updated_at?: string;
+    original_url?: string;
+    preview_url?: string;
+}
+
 export type StoreType = {
     id?: number;
-    media: {
-        original_url?: string,
-    }[],
     name: {
         en: string;
         ar: string;
@@ -58,13 +82,19 @@ export type StoreType = {
         en: string;
         ar: string;
     };
-    social_media: { platform: string, url: string };
+    social_media: {
+        platform: string,
+        url: string
+    };
+
+
+    gallery_tmo?: string[];
+    logo_tmp?: string[];
 
     email: string;
     phone: string;
     password: string;
-    logo: string;
-    gallery: string[];
+
     is_active: boolean;
     rate: number;
 };

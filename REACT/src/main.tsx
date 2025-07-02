@@ -42,66 +42,66 @@ createRoot(document.getElementById('root')!).render(
     // <StrictMode>
     <LanguageProvider>
         <DashboardAuthProvider>
-            <CategoriesProvider>
+            {/* <CategoriesProvider>
                 <StoresProvider>
                     <ProductsProvider>
                         <TagsProvider>
                             <RolesProvider>
-                                <AdminsProvider >
-                                    <BrowserRouter>
-                                        <Routes>
-                                            <Route path='/admin'>
-                                                <Route element={<Auth />} path={'dashboard'}>
-                                                    <Route path='' element={<Dashboard />} />
-                                                    <Route path={'settings/profile'} element={<Profile />} />
-                                                    <Route path={'settings/password'} element={<Password />} />
-                                                    <Route path={'settings/appearance'} element={<Appearance />} />
+                                <AdminsProvider > */}
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/admin'>
+                        <Route element={<Auth />} path={'dashboard'}>
+                            <Route path='' element={<Dashboard />} />
+                            <Route path={'settings/profile'} element={<Profile />} />
+                            <Route path={'settings/password'} element={<Password />} />
+                            <Route path={'settings/appearance'} element={<Appearance />} />
 
 
-                                                    <Route path={'categories'} >
-                                                        <Route path={''} element={<CategoriesIndex />} />
-                                                        <Route path={'create'} element={<CreateCategory />} />
-                                                        <Route path={':id/edit'} element={<EditCategory />} />
-                                                    </Route>
+                            <Route path={'categories'} >
+                                <Route path={''} element={<CategoriesIndex />} />
+                                <Route path={'create'} element={<CreateCategory />} />
+                                <Route path={':id/edit'} element={<EditCategory />} />
+                            </Route>
 
-                                                    <Route path={'products'} >
-                                                        <Route path={''} element={<ProductsIndex />} />
-                                                        <Route path={'create'} element={<CreateProduct />} />
-                                                        <Route path={':id/edit'} element={<EditProduct />} />
-                                                    </Route>
-                                                    <Route path={'stores'} >
-                                                        <Route path={''} element={<StoresIndex />} />
-                                                        <Route path={'create'} element={<CreateStore />} />
-                                                        <Route path={':id/edit'} element={<EditStore />} />
-                                                    </Route>
+                            <Route path={'products'} >
+                                <Route path={''} element={<ProductsIndex />} />
+                                <Route path={'create'} element={<CreateProduct />} />
+                                <Route path={':id/edit'} element={<EditProduct />} />
+                            </Route>
+                            <Route path={'stores'} >
+                                <Route path={''} element={<StoresIndex />} />
+                                <Route path={'create'} element={<CreateStore />} />
+                                <Route path={':id/edit'} element={<EditStore />} />
+                            </Route>
 
-                                                    <Route path={'roles'} >
-                                                        <Route path={''} element={<RolesIndex />} />
-                                                        <Route path={'create'} element={<CreateRole />} />
-                                                        <Route path={':id/edit'} element={<EditRole />} />
-                                                    </Route>
-                                                    <Route path={'admins'} >
-                                                        <Route path={''} element={<AdminsIndex />} />
-                                                        <Route path={'create'} element={<CreateAdmin />} />
-                                                        <Route path={':id/edit'} element={<EditAdmin />} />
-                                                    </Route>
+                            <Route path={'roles'} >
+                                <Route path={''} element={<RolesIndex />} />
+                                <Route path={'create'} element={<CreateRole />} />
+                                <Route path={':id/edit'} element={<EditRole />} />
+                            </Route>
+                            <Route path={'admins'} >
+                                <Route path={''} element={<AdminsIndex />} />
+                                <Route path={'create'} element={<CreateAdmin />} />
+                                <Route path={':id/edit'} element={<EditAdmin />} />
+                            </Route>
 
-                                                </Route>
-                                                <Route element={<Guest />}>
-                                                    <Route path={'login'} element={<Login canResetPassword />} />
-                                                    <Route path={'forgot-password'} element={<ForgotPassword />} />
-                                                    <Route path={'register'} element={<Register />} />
-                                                    <Route path={'forgot-password'} element={<ResetPassword />} />
-                                                </Route>
-                                            </Route>
-                                        </Routes >
-                                    </BrowserRouter >
-                                </AdminsProvider>
+                        </Route>
+                        <Route element={<Guest />}>
+                            <Route path={'login'} element={<Login canResetPassword />} />
+                            <Route path={'forgot-password'} element={<ForgotPassword />} />
+                            <Route path={'register'} element={<Register />} />
+                            <Route path={'forgot-password'} element={<ResetPassword />} />
+                        </Route>
+                    </Route>
+                </Routes >
+            </BrowserRouter >
+            {/* </AdminsProvider>
                             </RolesProvider>
                         </TagsProvider>
                     </ProductsProvider>
                 </StoresProvider>
-            </CategoriesProvider>
+            </CategoriesProvider> */}
         </DashboardAuthProvider >
     </LanguageProvider>
     // </StrictMode>

@@ -42,19 +42,19 @@ class StoreRequest extends FormRequest
             'keywords.en' => ['nullable', 'array'],
             'keywords.ar' => ['nullable', 'array'],
 
-            'social_Media' => ['nullable', 'array'],
+            // 'social_Media' => ['nullable', 'array'],
 
             'email' => [
                 'required',
                 'email',
 
             ],
-            'phone' => ['required', 'string', 'unique:stores,phone'],
+            // 'phone' => ['required', 'string', 'unique:stores,phone'],
             'password' => ['required', 'string', 'min:8'],
 
             'is_active' => ['boolean'],
             'rate' => ['numeric', 'min:0'],
-            'logo' => ['nullable', 'string'],
+            // 'logo' => ['nullable', 'string'],
         ];
     }
 }

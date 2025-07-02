@@ -9,15 +9,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
 {
-    public function store(Request $request , $model)
+    public function store(Request $request)
     {
         if ($request->hasFile('upload')) {
-            $collection = $request->post('collection');
-
             $file = $request->file('upload');
             $folder_name = uniqid() . '-' . now()->timestamp;
             $file_name = $file->getClientOriginalName();
-            $file->storeAs("$model/$collection/tmp/" . $folder_name, $file_name);
+            $file->storeAs("tmp/" . $folder_name, $file_name);
             TemporaryFiles::create([
                 'file_name' => $file_name,
                 'folder_name' => $folder_name,
@@ -27,13 +25,12 @@ class UploadController extends Controller
         return '';
     }
 
-    public function revert(Request $request, $model)
+    public function revert(Request $request)
     {
         $folder_name = $request->input('folder_name');
-        $collection = $request->input('collection');
-        if ($folder_name && $collection) {
-            if (Storage::exists("$model/$collection/tmp/" . $folder_name)) {
-                Storage::deleteDirectory("$model/$collection/tmp/" . $folder_name);
+        if ($folder_name) {
+            if (Storage::exists("tmp/" . $folder_name)) {
+                Storage::deleteDirectory("tmp/" . $folder_name);
                 return response($folder_name, 200);
             }
         }

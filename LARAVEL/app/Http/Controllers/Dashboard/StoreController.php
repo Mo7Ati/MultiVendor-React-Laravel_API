@@ -15,7 +15,7 @@ class StoreController extends Controller
 {
     public function index()
     {
-        $stores = Store::with('media')->get();
+        $stores = Store::all();
         return ['stores' => $stores];
     }
 
@@ -28,28 +28,53 @@ class StoreController extends Controller
 
             $temporary_files = TemporaryFiles::whereIn('folder_name', $gallery)->get();
             foreach ($temporary_files as $file) {
-                $store->addMediaFromDisk("stores/gallery/tmp/$file->folder_name/$file->file_name")
+                $store->addMediaFromDisk("tmp/$file->folder_name/$file->file_name")
                     ->toMediaCollection('store_gallery');
-                Storage::deleteDirectory("stores/gallery/tmp/$file->folder_name");
+                Storage::deleteDirectory("tmp/$file->folder_name");
                 $file->delete();
             }
         }
 
-        $logo_folder_name = $request->post('logo');
-        if ($logo_folder_name) {
+        if ($request->has('logo')) {
+            $logo_folder_name = $request->post('logo');
             $temporary_file = TemporaryFiles::where('folder_name', $logo_folder_name)->first();
-            $store->addMediaFromDisk("stores/logos/tmp/$logo_folder_name/$temporary_file->file_name")
+            $store->addMediaFromDisk("tmp/$logo_folder_name/$temporary_file->file_name")
                 ->toMediaCollection('store_logo');
-            Storage::deleteDirectory("stores/logos/tmp/$logo_folder_name");
+            Storage::deleteDirectory("tmp/$logo_folder_name");
             $temporary_file->delete();
         }
 
-        return $store->load('media');
+        return $store;
+    }
+    public function edit(Store $store)
+    {
+        return $store;
     }
     public function update(StoreRequest $request, Store $store)
     {
         $store->update($request->all());
+        if ($request->has('gallery')) {
+            $gallery = $request->post('gallery');
 
+            $temporary_files = TemporaryFiles::whereIn('folder_name', $gallery)->get();
+            foreach ($temporary_files as $file) {
+                $store->addMediaFromDisk("tmp/$file->folder_name/$file->file_name")
+                    ->toMediaCollection('store_gallery');
+                Storage::deleteDirectory("tmp/$file->folder_name");
+                $file->delete();
+            }
+        }
+
+        if ($request->has('logo')) {
+            $logo_folder_name = $request->post('logo');
+            if ($logo_folder_name) {
+                $temporary_file = TemporaryFiles::where('folder_name', $logo_folder_name)->first();
+                $store->addMediaFromDisk("tmp/$logo_folder_name/$temporary_file->file_name")
+                    ->toMediaCollection('store_logo');
+                Storage::deleteDirectory("tmp/$logo_folder_name");
+                $temporary_file->delete();
+            }
+        }
         return $store;
     }
 

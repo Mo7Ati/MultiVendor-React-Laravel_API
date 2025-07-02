@@ -13,7 +13,7 @@ export const Loader = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
+            // zIndex: 9999,
         }}>
             <Spin size="large" />
         </div>
