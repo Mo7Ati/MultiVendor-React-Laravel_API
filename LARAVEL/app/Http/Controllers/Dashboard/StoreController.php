@@ -3,78 +3,35 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dashboard\StoreRequest;
+use App\Http\Requests\Dashboard\CreateStoreRequest;
+use App\Http\Requests\Dashboard\UpdateStoreRequest;
 use App\Models\Store;
-use App\Models\TemporaryFiles;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
+use App\Utils\UploadMediaTrait;
 
 class StoreController extends Controller
 {
+    use UploadMediaTrait;
+
     public function index()
     {
         $stores = Store::all();
         return ['stores' => $stores];
     }
 
-    public function store(StoreRequest $request)
+    public function store(CreateStoreRequest $request)
     {
-        $store = Store::create($request->all());
-
-        if ($request->has('gallery')) {
-            $gallery = $request->post('gallery');
-
-            $temporary_files = TemporaryFiles::whereIn('folder_name', $gallery)->get();
-            foreach ($temporary_files as $file) {
-                $store->addMediaFromDisk("tmp/$file->folder_name/$file->file_name")
-                    ->toMediaCollection('store_gallery');
-                Storage::deleteDirectory("tmp/$file->folder_name");
-                $file->delete();
-            }
-        }
-
-        if ($request->has('logo')) {
-            $logo_folder_name = $request->post('logo');
-            $temporary_file = TemporaryFiles::where('folder_name', $logo_folder_name)->first();
-            $store->addMediaFromDisk("tmp/$logo_folder_name/$temporary_file->file_name")
-                ->toMediaCollection('store_logo');
-            Storage::deleteDirectory("tmp/$logo_folder_name");
-            $temporary_file->delete();
-        }
-
+        $store = Store::create($request->validated());
+        $this->storeFiles($request, $store);
         return $store;
     }
     public function edit(Store $store)
     {
         return $store;
     }
-    public function update(StoreRequest $request, Store $store)
+    public function update(UpdateStoreRequest $request, Store $store)
     {
-        $store->update($request->all());
-        if ($request->has('gallery')) {
-            $gallery = $request->post('gallery');
-
-            $temporary_files = TemporaryFiles::whereIn('folder_name', $gallery)->get();
-            foreach ($temporary_files as $file) {
-                $store->addMediaFromDisk("tmp/$file->folder_name/$file->file_name")
-                    ->toMediaCollection('store_gallery');
-                Storage::deleteDirectory("tmp/$file->folder_name");
-                $file->delete();
-            }
-        }
-
-        if ($request->has('logo')) {
-            $logo_folder_name = $request->post('logo');
-            if ($logo_folder_name) {
-                $temporary_file = TemporaryFiles::where('folder_name', $logo_folder_name)->first();
-                $store->addMediaFromDisk("tmp/$logo_folder_name/$temporary_file->file_name")
-                    ->toMediaCollection('store_logo');
-                Storage::deleteDirectory("tmp/$logo_folder_name");
-                $temporary_file->delete();
-            }
-        }
+        $store->update($request->validated());
+        $this->storeFiles($request, $store);
         return $store;
     }
 
@@ -82,27 +39,4 @@ class StoreController extends Controller
     {
         $store->delete();
     }
-
-    // public function storeImage(Request $request, Store $store = null)
-    // {
-    //     if ($request->hasFile('logo_image') && $request->file('logo_image')->isValid()) {
-    //         if ($store) {
-    //             $this->deleteOldImage($store);
-    //         }
-    //         return $request->file('logo_image')->store('uploads/stores', 'public');
-    //     } else if ($store && $store->logo_image && filter_var($request->post('removeImage'), FILTER_VALIDATE_BOOLEAN)) {
-    //         $this->deleteOldImage($store);
-    //         return null;
-    //     } else {
-    //         return $store->logo_image ?? null;
-    //     }
-
-    // }
-
-    // public function deleteOldImage(Store $store)
-    // {
-    //     if ($store->logo_image && Storage::disk('public')->exists($store->logo_image)) {
-    //         Storage::disk('public')->delete($store->logo_image);
-    //     }
-    // }
 }

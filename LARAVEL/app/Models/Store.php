@@ -21,6 +21,7 @@ class Store extends Model implements HasMedia
         'keywords',
         'social_media',
         'email',
+        'delivery_time',
         'phone',
         'password',
         'is_active',
@@ -46,13 +47,13 @@ class Store extends Model implements HasMedia
     protected function logo(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getFirstMedia('store_logo'),
+            get: fn() => $this->getFirstMedia('stores-logo'),
         );
     }
     protected function gallery(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getMedia('store_gallery'),
+            get: fn() => $this->getMedia('stores-gallery'),
         );
     }
 }

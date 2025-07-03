@@ -12,7 +12,7 @@ use App\Http\Controllers\Dashboard\StoreController;
 use App\Http\Controllers\Dashboard\TagsController;
 use App\Http\Controllers\Dashboard\UserController;
 use Illuminate\Support\Facades\Storage;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
 
 
 
@@ -41,17 +41,7 @@ Route::group([
     ]);
 
     Route::post('upload', [UploadController::class, 'store']);
-    Route::delete('upload', [UploadController::class, 'revert']);
-
-    Route::post('load', function (Request $request) {
-        $file = Media::findByUuid($request->getContent());
-        return $file;
-    });
-
-    Route::post('remove', function (Request $request) {
-        $file = Media::findByUuid($request->getContent());
-        return $file->delete();
-
-    });
-
+    Route::delete('revert', [UploadController::class, 'revert']);
+    Route::post('load', [UploadController::class, 'load']);
+    Route::delete('remove', [UploadController::class, 'remove']);
 });

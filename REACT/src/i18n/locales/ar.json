@@ -41,6 +41,7 @@
     "error": "خطأ",
     "warning": "تحذير",
     "info": "معلومات",
+    "validationError": "يرجى إصلاح أخطاء التحقق من الصحة",
     "english": "English",
     "arabic": "العربية"
   },
@@ -107,21 +108,35 @@
       "updateLogo": "تحديث الشعار",
       "removeLogo": "إزالة الشعار",
       "uploadGallery": "رفع المعرض",
-      "socialMedia": "وسائل التواصل الاجتماعي"
+      "socialMedia": "وسائل التواصل الاجتماعي",
+      "addSocialMedia": "إضافة وسيلة تواصل اجتماعي",
+      "platform": "المنصة",
+      "url": "الرابط",
+      "platformPlaceholder": "مثل فيسبوك، إنستغرام، تويتر",
+      "urlPlaceholder": "مثل https://facebook.com/صفحتك",
+      "noSocialMedia": "لم يتم إضافة وسائل تواصل اجتماعي بعد",
+      "delivery_time": "وقت التوصيل"
     },
     "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMaxLength": "الاسم يجب ألا يتجاوز 255 حرف",
       "nameEnRequired": "اسم اللغة الإنجليزية مطلوب",
       "nameArRequired": "اسم اللغة العربية مطلوب",
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
       "phoneRequired": "رقم الهاتف مطلوب",
       "phoneInvalid": "أدخل رقم هاتف صحيح",
+      "addressRequired": "العنوان مطلوب",
+      "addressMaxLength": "العنوان يجب ألا يتجاوز 255 حرف",
       "addressEnRequired": "عنوان اللغة الإنجليزية مطلوب",
       "addressArRequired": "عنوان اللغة العربية مطلوب",
       "passwordRequired": "كلمة المرور مطلوبة",
-      "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+      "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
       "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
-      "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
+      "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+      "deliveryTimeRequired": "وقت التوصيل مطلوب",
+      "deliveryTimeNumeric": "وقت التوصيل يجب أن يكون رقماً",
+      "logoRequired": "الشعار مطلوب"
     }
   },
   "products": {

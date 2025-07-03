@@ -85,9 +85,9 @@ export type StoreType = {
     social_media: {
         platform: string,
         url: string
-    };
+    }[];
 
-
+    delivery_time: number;
     gallery_tmo?: string[];
     logo_tmp?: string[];
 

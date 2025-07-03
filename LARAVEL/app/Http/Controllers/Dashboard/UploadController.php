@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TemporaryFiles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class UploadController extends Controller
 {
     public function store(Request $request)
@@ -35,5 +35,15 @@ class UploadController extends Controller
             }
         }
         return response('Failed', 400);
+    }
+    public function load(Request $request)
+    {
+        $file = Media::findByUuid($request->getContent());
+        return $file;
+    }
+    public function remove(Request $request)
+    {
+        $file = Media::findByUuid($request->getContent());
+        return $file->delete();
     }
 }

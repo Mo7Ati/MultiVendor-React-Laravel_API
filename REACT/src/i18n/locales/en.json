@@ -41,6 +41,7 @@
     "error": "Error",
     "warning": "Warning",
     "info": "Information",
+    "validationError": "Please fix the validation errors",
     "english": "English",
     "arabic": "العربية"
   },
@@ -107,21 +108,35 @@
       "updateLogo": "Update Logo",
       "removeLogo": "Remove Logo",
       "uploadGallery": "Upload Gallery",
-      "socialMedia": "Social Media"
+      "socialMedia": "Social Media",
+      "addSocialMedia": "Add Social Media",
+      "platform": "Platform",
+      "url": "URL",
+      "platformPlaceholder": "e.g. Facebook, Instagram, Twitter",
+      "urlPlaceholder": "e.g. https://facebook.com/yourpage",
+      "noSocialMedia": "No social media added yet",
+      "delivery_time": "Delivery Time"
     },
     "validation": {
+      "nameRequired": "Name is required",
+      "nameMaxLength": "Name must not exceed 255 characters",
       "nameEnRequired": "English name is required",
       "nameArRequired": "Arabic name is required",
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email",
       "phoneRequired": "Phone is required",
       "phoneInvalid": "Enter a valid phone number",
+      "addressRequired": "Address is required",
+      "addressMaxLength": "Address must not exceed 255 characters",
       "addressEnRequired": "English address is required",
       "addressArRequired": "Arabic address is required",
       "passwordRequired": "Password is required",
-      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordMinLength": "Password must be at least 8 characters",
       "confirmPasswordRequired": "Please confirm your password",
-      "passwordsDoNotMatch": "Passwords do not match"
+      "passwordsDoNotMatch": "Passwords do not match",
+      "deliveryTimeRequired": "Delivery time is required",
+      "deliveryTimeNumeric": "Delivery time must be a number",
+      "logoRequired": "Logo is required"
     }
   },
   "products": {

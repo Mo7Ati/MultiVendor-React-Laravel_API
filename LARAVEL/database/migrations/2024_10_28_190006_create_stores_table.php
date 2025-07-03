@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->json('keywords')->nullable();
 
 
-            $table->json('social_Media')->nullable();
+            $table->json('social_media')->nullable();
 
             $table->string('email')->unique();
             $table->string('phone')->unique();

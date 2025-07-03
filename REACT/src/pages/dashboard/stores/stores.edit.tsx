@@ -31,6 +31,8 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
 import { FilePond, registerPlugin } from 'react-filepond';
 import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+import Pond from "@/components/file-pond";
+import SocialMediaInput from "@/components/ui/SocialMediaInput";
 
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
 
@@ -56,195 +58,6 @@ type EditStorePageType = StoreType & {
     gallery: MediaType[];
 };
 
-const GalleryPond = memo(function Pond({ gallery, onGalleryChange }: { gallery: MediaType[], onGalleryChange: (data: string, type: 'add' | 'revert') => void }) {
-    return (
-        <FilePond
-            name="upload"
-            allowMultiple={true}
-            files={
-                gallery
-                    ? gallery.map(file => ({
-                        source: file.uuid!,
-                        options: {
-                            type: 'local'
-                        }
-                    }))
-                    : []
-            }
-            server={{
-                process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
-                    const formData = new FormData();
-                    formData.append(fieldName, file, file.name);
-                    const source = axios.CancelToken.source();
-
-                    axiosClient.post('/api/admin/dashboard/upload', formData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-                            onUploadProgress: (e) => {
-                                progress(e.lengthComputable, e.loaded, Number(e.total));
-                            },
-                            cancelToken: source.token,
-                        }).then(response => {
-                            if (response.status >= 200 && response.status < 300) {
-                                onGalleryChange(response.data, 'add')
-                                load(response.data);
-                            } else {
-                                error('oh no');
-                            }
-                        })
-
-                    return {
-                        abort: () => {
-                            // This function is entered if the user has tapped the cancel button
-                            source.cancel('Upload cancelled by user');
-                            // Let FilePond know the request has been cancelled
-                            abort();
-                        },
-                    };
-                },
-                revert: (uniqueFileId, load, error) => {
-                    const folderName = uniqueFileId;
-
-                    axiosClient.delete('/api/admin/dashboard/upload', {
-                        data: {
-                            folder_name: folderName,
-                        },
-                    }).then((response) => {
-                        if (response.status === 200) {
-                            onGalleryChange(response.data, 'revert')
-                            load();
-                        }
-                        else error('Revert failed');
-                    })
-                        .catch(() => error('Network error'));
-                },
-                load: (source, load, error, progress, abort, headers) => {
-                    axiosClient.post('/api/admin/dashboard/load',
-                        source,
-                        {
-                            responseType: 'blob',
-                            onUploadProgress: (e) => {
-                                progress(e.lengthComputable, e.loaded, Number(e.total));
-                            },
-                        }
-                    ).then(res => load(res.data))
-                        .catch(res => error('oh my goodness'))
-                    return {
-                        abort: () => {
-                            abort();
-                        },
-                    };
-                },
-                remove: (source, load, error) => {
-                    console.log(source);
-                    axiosClient.post("api/admin/dashboard/remove", source)
-                        .then(res => {
-                            // setStore({ ...store, gallery: [...store.gallery].filter(file => file.uuid !== source) })
-                            load()
-                        })
-                        .catch(res => error('oh my goodness'))
-                },
-            }}
-        />
-    )
-});
-
-const LogoPond = memo(function Pond({ logo, onLogoChange }: { logo: MediaType, onLogoChange: (data: string) => void }) {
-    return (
-        <FilePond
-            name="upload"
-            allowMultiple={false}
-            maxFiles={1}
-            files={
-                logo
-                    ? [{ source: logo.uuid!, options: { type: 'local' } }]
-                    : []
-            }
-            server={{
-                process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
-                    const formData = new FormData();
-                    formData.append(fieldName, file, file.name);
-
-                    const source = axios.CancelToken.source();
-
-                    axiosClient.post('/api/admin/dashboard/upload', formData,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-                            onUploadProgress: (e) => {
-                                progress(e.lengthComputable, e.loaded, Number(e.total));
-                            },
-                            cancelToken: source.token,
-                        }).then(response => {
-                            if (response.status >= 200 && response.status < 300) {
-                                onLogoChange(response.data);
-                                load(response.data);
-                            } else {
-                                error('oh no');
-                            }
-                        })
-
-                    return {
-                        abort: () => {
-                            // This function is entered if the user has tapped the cancel button
-                            source.cancel('Upload cancelled by user');
-                            // Let FilePond know the request has been cancelled
-                            abort();
-                        },
-                    };
-                },
-                revert: (uniqueFileId, load, error) => {
-                    const folderName = uniqueFileId;
-
-                    axiosClient.delete('/api/admin/dashboard/upload', {
-                        data: {
-                            folder_name: folderName,
-                        },
-                    })
-                        .then((res) => {
-                            if (res.status === 200) {
-                                onLogoChange(res.data);
-                                load();
-                            }
-                            else error('Revert failed');
-                        })
-                        .catch(() => error('Network error'));
-                },
-                load: (source, load, error, progress, abort, headers) => {
-                    axiosClient.post('/api/admin/dashboard/load',
-                        source,
-                        {
-                            responseType: 'blob',
-                            onUploadProgress: (e) => {
-                                progress(e.lengthComputable, e.loaded, Number(e.total));
-                            },
-                        }
-                    )
-                        .then(res => load(res.data))
-                        .catch(res => error('oh my goodness'))
-
-                    return {
-                        abort: () => {
-                            abort();
-                        },
-                    };
-                },
-                remove: (source, load, error) => {
-                    axiosClient.post("api/admin/dashboard/remove", source,
-                    )
-                        .then(res => load())
-                        .catch(res => error('oh my goodness'))
-                },
-            }
-            }
-        />
-    )
-
-});
-
 export default function EditStore() {
     const { t } = useTranslation();
     const params = useParams();
@@ -254,22 +67,44 @@ export default function EditStore() {
     const [store, setStore] = useState<EditStorePageType>();
     const [loaded, setLoaded] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [gallery, setGallery] = useState<string[]>([])
-    const [logo, setLogo] = useState<string>('')
+    const [media, setMedia] = useState<{ logo: string, gallery: string[] }>({ logo: '', gallery: [] })
+    const [form] = Form.useForm();
+    const logo = useMemo(() => store?.logo ? [store.logo] : undefined, [store?.logo])
+    const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
-    const handleGalleryChange = useCallback((data: string, type: 'add' | 'revert') => {
+
+    const initialValues = store ? {
+        email: store.email,
+        phone: store.phone,
+        password: store.password,
+        delivery_time: store.delivery_time,
+        is_active: store.is_active,
+        social_media: store.social_media,
+        logo: logo,
+        gallery: store.gallery,
+        ...Object.fromEntries([
+            ...Object.entries(store.name || { en: '', ar: '' }).map(([k, v]) => ["name." + k, v]),
+            ...Object.entries(store.description || { en: '', ar: '' }).map(([k, v]) => ["description." + k, v]),
+            ...Object.entries(store.address || { en: '', ar: '' }).map(([k, v]) => ["address." + k, v]),
+            ...Object.entries(store.keywords || { en: '', ar: '' }).map(([k, v]) => ["keywords." + k, v]),
+        ])
+    } : {};
+
+    const handleLogoChange = useCallback((payload: string, type: 'add' | 'revert') => {
         if (type === 'add') {
-            setGallery(prev => [...prev, data]);
+            setMedia({ ...media, logo: payload })
         } else if (type === 'revert') {
-            setGallery(prev => [...prev].filter(file => file !== data));
+            setMedia({ ...media, logo: '' })
         }
     }, []);
 
-    const handleLogoChange = useCallback((data: string) => {
-        setLogo(data)
+    const handleGalleryChange = useCallback((payload: string, type: 'add' | 'revert') => {
+        if (type === 'add') {
+            setMedia(prev => ({ ...prev, gallery: [...prev.gallery, payload] }))
+        } else if (type === 'revert') {
+            setMedia(prev => ({ ...prev, gallery: [...prev.gallery].filter(file => file !== payload) }))
+        }
     }, []);
-
-    console.log(logo, gallery);
 
     useEffect(() => {
         fetchStore();
@@ -285,31 +120,36 @@ export default function EditStore() {
 
     const handleSubmit = () => {
         setLoading(true);
-
+        setBackendErrors([]);
         const updateData = {
             ...store,
-            logo,
-            gallery
+            logo: null,
+            gallery: null,
+            media,
         };
         axiosClient.put(`/api/admin/dashboard/stores/${params.id}`, updateData)
             .then(res => {
-                // setFlashMessage(t('stores.storeUpdated'));
                 messageApi.open({
                     type: 'success',
                     content: t('stores.storeUpdated'),
                 });
                 navigate("/admin/dashboard/stores");
-            }).catch((res) => {
+            }).catch((error) => {
+                if (error.response?.data?.errors) {
+                    const errorsArray = Object.values(error.response.data.errors).flat();
+                    setBackendErrors(errorsArray as string[]);
+                } else {
+                    setBackendErrors([t('common.error')]);
+                }
                 messageApi.open({
                     type: 'error',
-                    content: t('common.error'),
+                    content: t('common.validationError'),
                 });
             }).finally(() => {
                 setLoading(false);
             });
     };
-
-
+    console.log(store);
 
     const items: TabsProps['items'] =
         [{ code: 'en', label: 'English' }, { code: 'ar', label: 'عربي' }].map(locale =>
@@ -319,7 +159,15 @@ export default function EditStore() {
                 label: locale.label,
                 children: (
                     store && <>
-                        <Form.Item label="Name" labelCol={{ span: 7 }}>
+                        <Form.Item
+                            name={`name.${locale.code}`}
+                            label="Name"
+                            labelCol={{ span: 7 }}
+                            rules={[
+                                { required: true, message: t('stores.validation.nameRequired') },
+                                { max: 255, message: t('stores.validation.nameMaxLength') }
+                            ]}
+                        >
                             <Input
                                 value={store.name?.[locale.code as keyof typeof store.name] || ''}
                                 onChange={(e) => {
@@ -329,6 +177,7 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
+                            name={`description.${locale.code}`}
                             label={'Description'}
                             labelCol={{ span: 7 }}
                         >
@@ -342,8 +191,13 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
+                            name={`address.${locale.code}`}
                             label={'Address'}
                             labelCol={{ span: 7 }}
+                            rules={[
+                                { required: true, message: t('stores.validation.addressRequired') },
+                                { max: 255, message: t('stores.validation.addressMaxLength') }
+                            ]}
                         >
                             <Input
                                 value={store.address?.[locale.code as keyof typeof store.address] || ''}
@@ -354,6 +208,7 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
+                            name={`keywords.${locale.code}`}
                             label={'Keywords'}
                             labelCol={{ span: 7 }}
                         >
@@ -366,21 +221,10 @@ export default function EditStore() {
                                 }}
                             />
                         </Form.Item>
-
-                        <Form.Item label={t('stores.form.socialMedia')} labelCol={{ span: 7 }}>
-                            <Input
-                                value={store.social_media?.[locale.code as keyof typeof store.social_media] || ''}
-                                onChange={e => {
-                                    setStore({ ...store, social_media: { ...store.social_media, [locale.code]: e.currentTarget.value } })
-                                }}
-                            />
-                        </Form.Item>
                     </>
                 )
             }
         ));
-
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {contextHolder}
@@ -389,12 +233,25 @@ export default function EditStore() {
                     store
                         ?
                         <Form
+                            form={form}
+                            initialValues={initialValues}
                             labelCol={{ span: 4 }}
                             wrapperCol={{ span: 14 }}
                             layout="horizontal"
                             style={{ maxWidth: '100%' }}
                             onFinish={handleSubmit}
                         >
+                            {backendErrors.length > 0 && (
+                                <div className="mb-6">
+                                    <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                        <ul className="list-disc pl-5">
+                                            {backendErrors.map((err, idx) => (
+                                                <li key={idx}>{err}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
                             <Row>
                                 <Col span={12}>
                                     <Card title={t('stores.form.storeInformation')} type="inner">
@@ -405,9 +262,8 @@ export default function EditStore() {
 
                                 <Col span={10} offset={1}>
                                     <Card title={t('stores.form.storeCredentials')} type="inner">
-
-
                                         <Form.Item
+                                            name="email"
                                             label={t('stores.columns.email')}
                                             labelCol={{ span: 6 }}
                                             rules={[
@@ -421,8 +277,8 @@ export default function EditStore() {
                                                 onChange={(e) => setStore({ ...store, email: e.currentTarget.value })}
                                             />
                                         </Form.Item>
-
                                         <Form.Item
+                                            name="phone"
                                             label={t('stores.form.phone')}
                                             labelCol={{ span: 6 }}
                                             rules={[
@@ -438,9 +294,13 @@ export default function EditStore() {
                                         </Form.Item>
 
                                         <Form.Item
+                                            name="password"
                                             label={t('stores.form.password')}
                                             labelCol={{ span: 6 }}
                                             help={t('stores.form.passwordHelp')}
+                                            rules={[
+                                                { min: 8, message: t('stores.validation.passwordMinLength') },
+                                            ]}
                                         >
                                             <Input.Password
                                                 value={store.password}
@@ -449,23 +309,71 @@ export default function EditStore() {
                                             />
                                         </Form.Item>
                                     </Card>
-                                    <br />
-                                    {/*  */}
+                                    <Card title={t('stores.form.status')} type="inner">
+                                        <Form.Item
+                                            name="delivery_time"
+                                            label={t('stores.form.delivery_time')}
+                                            labelCol={{ span: 6 }}
+                                            rules={[
+                                                // { required: true, message: t('stores.validation.deliveryTimeRequired') },
+                                                // { type: 'number', message: t('stores.validation.deliveryTimeNumeric') }
+                                            ]}
+                                        >
+                                            <Input
+                                                type="number"
+                                                value={store.delivery_time}
+                                                onChange={
+                                                    e => {
+                                                        setStore({ ...store, delivery_time: Number(e.currentTarget.value) })
+                                                    }
+                                                }
+                                            />
+                                        </Form.Item>
+                                        <Form.Item
+                                            name="is_active"
+                                            valuePropName="checked"
+                                        >
+                                            <Checkbox
+                                                checked={!!store?.is_active}
+                                                onChange={(e) => setStore(prev => prev ? { ...prev, is_active: e.target.checked } : prev)}
+                                            >
+                                                {t('stores.form.isActive')}
+                                            </Checkbox>
+                                        </Form.Item>
+                                    </Card>
                                 </Col>
                             </Row>
                             <br />
                             <br />
-
+                            <Card title={t('stores.form.socialMedia')} type="inner">
+                                <SocialMediaInput
+                                    value={store.social_media}
+                                    onChange={(socialMedia) => setStore({ ...store, social_media: socialMedia })}
+                                />
+                            </Card>
+                            <br />
                             <Card title={t('stores.form.storeStatus')} type="inner">
-                                <Form.Item label={t('stores.form.logo')}>
-                                    <LogoPond logo={store.logo} onLogoChange={handleLogoChange} />
+                                <Form.Item
+                                    label={t('stores.form.logo')}
+                                >
+                                    <Pond
+                                        allowMultiple={false}
+                                        maxFiles={1}
+                                        files={store.logo ? logo : undefined}
+                                        onChange={handleLogoChange}
+                                        setLoading={setLoading}
+                                    />
                                 </Form.Item>
-                                <Form.Item label={t('stores.form.gallery')}>
-                                    <GalleryPond gallery={store.gallery} onGalleryChange={handleGalleryChange} />
-                                </Form.Item>
-
-                                <Form.Item>
-                                    <Checkbox style={{ marginLeft: 170 }} onChange={(e) => setStore({ ...store, is_active: e.target.checked })}>{t('stores.form.isActive')}</Checkbox>
+                                <Form.Item
+                                    label={'Gallery'}
+                                >
+                                    <Pond
+                                        allowMultiple={true}
+                                        maxFiles={5}
+                                        files={store.gallery ?? undefined}
+                                        onChange={handleGalleryChange}
+                                        setLoading={setLoading}
+                                    />
                                 </Form.Item>
                             </Card>
                             <Form.Item>
