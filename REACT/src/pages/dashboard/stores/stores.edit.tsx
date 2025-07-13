@@ -64,37 +64,37 @@ export default function EditStore() {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
 
-    const [store, setStore] = useState<EditStorePageType>();
     const [loaded, setLoaded] = useState(false);
     const [loading, setLoading] = useState(false);
     const [media, setMedia] = useState<{ logo: string, gallery: string[] }>({ logo: '', gallery: [] })
     const [form] = Form.useForm();
-    const logo = useMemo(() => store?.logo ? [store.logo] : undefined, [store?.logo])
     const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
 
-    const initialValues = store ? {
-        email: store.email,
-        phone: store.phone,
-        password: store.password,
-        delivery_time: store.delivery_time,
-        is_active: store.is_active,
-        social_media: store.social_media,
-        logo: logo,
-        gallery: store.gallery,
-        ...Object.fromEntries([
-            ...Object.entries(store.name || { en: '', ar: '' }).map(([k, v]) => ["name." + k, v]),
-            ...Object.entries(store.description || { en: '', ar: '' }).map(([k, v]) => ["description." + k, v]),
-            ...Object.entries(store.address || { en: '', ar: '' }).map(([k, v]) => ["address." + k, v]),
-            ...Object.entries(store.keywords || { en: '', ar: '' }).map(([k, v]) => ["keywords." + k, v]),
-        ])
-    } : {};
+    const InitialValues: EditStorePageType = {
+        name: { ar: '', en: '' },
+        description: { ar: '', en: '' },
+        address: { ar: '', en: '' },
+        keywords: { ar: '', en: '' },
+        email: '',
+        phone: '',
+        password: '',
+        delivery_time: 0,
+        is_active: true,
+        social_media: [{ platform: '', url: '' }],
+        rate: 0,
+        logo: {},
+        gallery: [{}],
+    }
+    const [store, setStore] = useState<EditStorePageType>(InitialValues);
+    const logo = useMemo(() => store?.logo ? [store.logo] : undefined, [store?.logo])
+    console.log(store, media);
 
     const handleLogoChange = useCallback((payload: string, type: 'add' | 'revert') => {
         if (type === 'add') {
-            setMedia({ ...media, logo: payload })
+            setMedia(prev => ({ ...prev, logo: payload }))
         } else if (type === 'revert') {
-            setMedia({ ...media, logo: '' })
+            setMedia(prev => ({ ...prev, logo: '' }))
         }
     }, []);
 
@@ -110,12 +110,14 @@ export default function EditStore() {
         fetchStore();
     }, []);
 
-    const fetchStore = () => {
-        axiosClient.get(`api/admin/dashboard/stores/${Number(params.id)}/edit`)
-            .then(response => {
-                setStore(response.data)
-                setLoaded(true)
-            }).catch(e => <></>)
+    const fetchStore = async () => {
+        try {
+            const response = await axiosClient.get(`api/admin/dashboard/stores/${Number(params.id)}/edit`)
+            setStore(response.data)
+            setLoaded(true)
+        } catch (e) {
+
+        }
     }
 
     const handleSubmit = () => {
@@ -149,8 +151,8 @@ export default function EditStore() {
                 setLoading(false);
             });
     };
-    console.log(store);
 
+    console.log(store);
     const items: TabsProps['items'] =
         [{ code: 'en', label: 'English' }, { code: 'ar', label: 'عربي' }].map(locale =>
         (
@@ -160,7 +162,7 @@ export default function EditStore() {
                 children: (
                     store && <>
                         <Form.Item
-                            name={`name.${locale.code}`}
+                            name={['name', locale.code]}
                             label="Name"
                             labelCol={{ span: 7 }}
                             rules={[
@@ -177,7 +179,7 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
-                            name={`description.${locale.code}`}
+                            name={['description', locale.code]}
                             label={'Description'}
                             labelCol={{ span: 7 }}
                         >
@@ -191,7 +193,7 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
-                            name={`address.${locale.code}`}
+                            name={['address', locale.code]}
                             label={'Address'}
                             labelCol={{ span: 7 }}
                             rules={[
@@ -208,7 +210,7 @@ export default function EditStore() {
                         </Form.Item>
 
                         <Form.Item
-                            name={`keywords.${locale.code}`}
+                            name={['keywords', locale.code]}
                             label={'Keywords'}
                             labelCol={{ span: 7 }}
                         >
@@ -230,11 +232,11 @@ export default function EditStore() {
             {contextHolder}
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {
-                    store
+                    (store && loaded)
                         ?
                         <Form
                             form={form}
-                            initialValues={initialValues}
+                            initialValues={store}
                             labelCol={{ span: 4 }}
                             wrapperCol={{ span: 14 }}
                             layout="horizontal"
@@ -309,7 +311,7 @@ export default function EditStore() {
                                             />
                                         </Form.Item>
                                     </Card>
-                                    <Card title={t('stores.form.status')} type="inner">
+                                    <Card title={'status'} type="inner">
                                         <Form.Item
                                             name="delivery_time"
                                             label={t('stores.form.delivery_time')}
@@ -401,7 +403,7 @@ export default function EditStore() {
                         <Loader />
                 }
             </div>
-        </AppLayout>
+        </AppLayout >
     );
 
 

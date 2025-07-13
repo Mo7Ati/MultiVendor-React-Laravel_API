@@ -12,9 +12,11 @@ const axiosClient = axios.create({
     }
 });
 
-
 axiosClient.interceptors.request.use(config => {
     NProgress.set(.3);
+    // Set Accept-Language header from localStorage or default to 'en'
+    const lang = localStorage.getItem('language') || 'en';
+    config.headers['Accept-Language'] = lang;
     return config;
 });
 

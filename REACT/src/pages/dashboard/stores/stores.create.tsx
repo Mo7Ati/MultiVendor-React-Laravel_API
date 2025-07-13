@@ -75,6 +75,9 @@ export default function CreateStore() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
+
+    console.log(data, media);
+
     const handleSubmit = async () => {
         try {
             setLoading(true);
@@ -184,9 +187,9 @@ export default function CreateStore() {
 
     const handleLogoChange = useCallback((payload: string, type: 'add' | 'revert') => {
         if (type === 'add') {
-            setMedia({ ...media, logo: payload })
+            setMedia(prev => ({ ...prev, logo: payload }))
         } else if (type === 'revert') {
-            setMedia({ ...media, logo: '' })
+            setMedia(prev => ({ ...prev, logo: '' }))
         }
     }, []);
 
@@ -278,7 +281,7 @@ export default function CreateStore() {
 
                             </Card>
                             <br />
-                            <Card title={t('stores.form.status')} type="inner">
+                            <Card title={'stores.form.status'} type="inner">
                                 <Form.Item name={"delivery_time"} label={t('stores.form.delivery_time')} labelCol={{ span: 7 }}  >
                                     <Input
                                         type="number"

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Dashboard;
 use App\Models\Store;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class CreateStoreRequest extends FormRequest
@@ -16,6 +17,7 @@ class CreateStoreRequest extends FormRequest
     {
         return true;
     }
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -65,31 +67,6 @@ class CreateStoreRequest extends FormRequest
             'is_active' => ['boolean'],
             'rate' => ['numeric', 'min:0'],
             'logo' => ['nullable', 'string'],
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'name.en.required' => 'The English name is required.',
-            'name.ar.required' => 'The Arabic name is required.',
-            'name.*.max' => 'The name may not be greater than 255 characters.',
-            'address.en.required' => 'The English address is required.',
-            'address.ar.required' => 'The Arabic address is required.',
-            'address.*.max' => 'The address may not be greater than 255 characters.',
-            'email.required' => 'The email address is required.',
-            'email.email' => 'The email address must be valid.',
-            'email.unique' => 'This email address is already in use.',
-            'phone.required' => 'The phone number is required.',
-            'phone.unique' => 'This phone number is already in use.',
-            'password.required' => 'The password is required.',
-            'password.min' => 'The password must be at least 8 characters.',
-            'delivery_time.required' => 'The delivery time is required.',
-            'delivery_time.numeric' => 'The delivery time must be a number.',
-            'media.logo.required' => 'The store logo is required.',
-            'social_media.*.platform.required' => 'Each social media entry must have a platform.',
-            'social_media.*.url.required' => 'Each social media entry must have a Valid URL.',
-            'social_media.*.url.url' => 'Each social media URL must be valid.',
         ];
     }
 }

@@ -21,10 +21,39 @@ class StoreFactory extends Factory
         ProviderCollectionHelper::addAllProvidersTo($faker);
 
         return [
-            'name' => $faker->unique()->department,
-            'description' => $faker->sentences(1, true),
-            'logo_image' => "https://dummyimage.com/600x400/000/fff.png&text=" . $faker->numberBetween(0, 30),
-            'status' => 'active',
+            'name' => [
+                'en' => $this->faker->name(),
+                'ar' => $this->faker->name() . ' العربية',
+            ],
+            'description' => [
+                'en' => $this->faker->paragraph,
+                'ar' => $this->faker->paragraph . ' بالعربية',
+            ],
+            'address' => [
+                'en' => $this->faker->address,
+                'ar' => $this->faker->address . ' العربية',
+            ],
+            'keywords' => [
+                'en' => implode(', ', $this->faker->words(5)),
+                'ar' => implode(', ', $this->faker->words(5)) . ' عربية',
+            ],
+            'email' => $this->faker->unique()->safeEmail,
+            'phone' => $this->faker->unique()->phoneNumber,
+            'password' => $this->faker->password,
+            'delivery_time' => $this->faker->numberBetween(10, 20),
+            'social_media' => [
+                [
+                    'platform' => 'Facebook',
+                    'url' => 'https://facebook.com/' . $this->faker->userName,
+                ],
+                [
+                    'platform' => 'Instagram',
+                    'url' => 'https://instagram.com/' . $this->faker->userName,
+                ],
+            ],
+            'rate' => $this->faker->randomFloat(1, 0, 5),
+            'is_active' => $this->faker->boolean,
         ];
     }
 }
+

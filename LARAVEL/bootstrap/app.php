@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+        $middleware->alias(['set-locale' => \App\Http\Middleware\SetLocale::class]);
+        $middleware->api(['set-locale']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

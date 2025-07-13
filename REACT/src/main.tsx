@@ -36,6 +36,9 @@ import AdminsProvider from './providers/admin-provider';
 import AdminsIndex from './pages/dashboard/admins/admins.index';
 import CreateAdmin from './pages/dashboard/admins/admins.create';
 import EditAdmin from './pages/dashboard/admins/admins.edit';
+import StoreCategoriesIndex from './pages/dashboard/store-categories/store-categories.index';
+import StoreCategoryCreate from './pages/dashboard/store-categories/store-categories.create';
+import StoreCategoryEdit from './pages/dashboard/store-categories/store-categories.edit';
 
 
 createRoot(document.getElementById('root')!).render(
@@ -84,6 +87,12 @@ createRoot(document.getElementById('root')!).render(
                                 <Route path={''} element={<AdminsIndex />} />
                                 <Route path={'create'} element={<CreateAdmin />} />
                                 <Route path={':id/edit'} element={<EditAdmin />} />
+                            </Route>
+
+                            <Route path={'store-categories'} >
+                                <Route path={''} element={<StoreCategoriesIndex />} />
+                                <Route path={'create'} element={<StoreCategoryCreate />} />
+                                <Route path={':id/edit'} element={<StoreCategoryEdit />} />
                             </Route>
 
                         </Route>

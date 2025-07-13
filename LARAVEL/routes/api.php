@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dashboard\FileHandlerController;
+use App\Http\Controllers\Dashboard\StoreCategoryController;
 use App\Http\Controllers\Dashboard\UploadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,13 +21,13 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/admin', function (Request $request) {
     $admin = Auth::guard('admin')->user();
-    return ['user' => $admin,];//'permissions' => $admin->permissions()
-})->middleware('auth:admin');
+    return response()->json(['user' => $admin]);
+})->middleware('auth:sanctum');
 
 
 
 Route::group([
-    'middleware' => 'auth:admin',
+    'middleware' => 'auth:sanctum',
     'prefix' => 'admin/dashboard',
     'as' => 'dashboard.'
 ], function () {
@@ -38,6 +39,7 @@ Route::group([
         'users' => UserController::class,
         'roles' => RoleController::class,
         'tags' => TagsController::class,
+        'store-categories' => StoreCategoryController::class,
     ]);
 
     Route::post('upload', [UploadController::class, 'store']);

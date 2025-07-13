@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 
 class Store extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia;
+    use HasFactory, HasTranslations, InteractsWithMedia, Searchable;
 
     protected $fillable = [
         'name',
@@ -36,7 +39,6 @@ class Store extends Model implements HasMedia
         'social_media' => 'array',
     ];
 
-    public $appends = ['logo', 'gallery'];
 
     public array $translatable = ['name', 'description', 'address', 'keywords'];
 
@@ -44,16 +46,13 @@ class Store extends Model implements HasMedia
     {
         return $this->hasMany(Product::class, 'store_id', 'id');
     }
-    protected function logo(): Attribute
+
+    public function toSearchableArray()
     {
-        return Attribute::make(
-            get: fn() => $this->getFirstMedia('stores-logo'),
-        );
-    }
-    protected function gallery(): Attribute
-    {
-        return Attribute::make(
-            get: fn() => $this->getMedia('stores-gallery'),
-        );
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'address' => $this->address,
+        ];
     }
 }

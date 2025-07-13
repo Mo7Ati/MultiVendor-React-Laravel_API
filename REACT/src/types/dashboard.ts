@@ -130,3 +130,17 @@ export type AdminType = {
     super_admin: boolean;
     roles: RoleType[];
 }
+
+export interface StoreCategoryType {
+    id: number;
+    name: {
+        en: string;
+        ar: string;
+    };
+    description?: {
+        en?: string;
+        ar?: string;
+    };
+    created_at?: string;
+    updated_at?: string;
+}

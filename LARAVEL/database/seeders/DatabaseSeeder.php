@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'dawly@ps.com',
         //     'password' => Hash::make('password'),
         // ]);
+        Store::factory()->count(100)->create();
 
         Admin::factory()->create([
             'name' => 'Admin',

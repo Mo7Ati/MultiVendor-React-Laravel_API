@@ -1,38 +1,27 @@
 import axiosClient from "@/axios-client";
-import { usePermissions } from "@/hooks/use-permissions";
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
+import { Button, Dropdown, Flex, Image, Input, InputRef, MenuProps, message, Select, Space, Table, TableColumnsType, TableColumnType, TablePaginationConfig, Tag, Typography } from 'antd';
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StoreType } from "@/types/dashboard";
 import {
-    Button,
-    Space,
-    Table,
-    message,
-    InputRef,
-    TableColumnsType,
-    TableColumnType,
-    Input,
-    Dropdown,
-    MenuProps,
-    Badge,
-    Image
-} from 'antd';
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
     SearchOutlined,
+    MailOutlined,
+    EnvironmentOutlined,
+    StarOutlined,
+    FilterOutlined,
+    CloseOutlined,
     MoreOutlined,
     EditOutlined,
     DeleteOutlined,
-    StarOutlined,
-    MailOutlined,
-    PhoneOutlined,
-    EnvironmentOutlined,
-    GlobalOutlined
+    SaveOutlined,
+    CheckCircleOutlined,
+    CloseCircleOutlined,
 } from '@ant-design/icons';
-import { FilterDropdownProps } from "antd/es/table/interface";
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from "@/providers/LanguageProvider";
+import { t } from "i18next";
+import { Label } from "@/components/ui/label";
+import { FilterValue, SorterResult, TableCurrentDataSource } from "antd/es/table/interface";
+import { useNavigate } from "react-router-dom";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,160 +34,121 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function StoresIndex() {
-    const [messageApi, contextHolder] = message.useMessage();
-    const can = usePermissions();
-    const navigate = useNavigate();
-    const { t } = useTranslation();
-    const { currentLanguage } = useLanguage();
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
-    const [loaded, setLoaded] = useState<boolean>(false);
+export default function StoresIndex() {
     const [stores, setStores] = useState<StoreType[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [search, setSearch] = useState<string | null>(null)
+    const [debouncedValue, setDebouncedValue] = useState<string | null>(null)
+    const searchInput = useRef<InputRef>(null);
+
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0,
+    });
+
+    const [is_active, setIsActive] = useState<boolean | null>(null);
+    const [sort, setSort] = useState<{ column: undefined | string, order: undefined | 'desc' | 'asc' }>({ column: undefined, order: undefined });
+    const navigate = useNavigate();
+
+    function resetPagination() {
+        setPagination(prev => ({
+            ...prev,
+            current: 1,
+        }));
+    }
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            setDebouncedValue(search);
+        }, 1000);
+
+        return () => clearTimeout(delayDebounce);
+    }, [search])
+
+
+    const getStores = async () => {
+        setLoading(true);
+        try {
+            const response = await axiosClient.get('/api/admin/dashboard/stores',
+                {
+                    params: {
+                        search: debouncedValue,
+                        is_active,
+                        sortColumn: sort.column,
+                        sortOrder: sort.order,
+                        page: pagination.current,
+                        per_page: pagination.pageSize,
+                    }
+                });
+            setStores(response.data.data);
+            setPagination(prev => ({
+                ...prev,
+                total: response.data.meta.total,
+            }));
+
+            setLoading(false);
+        } catch (e) {
+            message.error('Failed to load stores');
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     useEffect(() => {
         getStores();
-    }, []);
+    }, [debouncedValue, is_active, pagination.current, pagination.pageSize, sort.column, sort.order]);
 
-    const getStores = async () => {
-        try {
-            const response = await axiosClient.get('/api/admin/dashboard/stores');
-            setStores(response.data.stores);
-            setLoaded(true);
-        } catch (error) {
-            throw error;
+
+    const handleTableChange = (
+        Pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue | null>,
+        sorter: SorterResult<StoreType> | SorterResult<StoreType>[],
+        extra: TableCurrentDataSource<StoreType>
+    ) => {
+
+
+        setPagination(prev => ({
+            ...prev,
+            current: Pagination.current!,
+            pageSize: Pagination.pageSize!,
+        }));
+
+
+        if (!Array.isArray(sorter)) {
+            const { field, order } = sorter;
+            const hasSort = Boolean(field && order);
+
+            setSort(prevSort => {
+                const newSort = hasSort
+                    ?
+                    {
+                        column: field as string,
+                        order: order === 'ascend' ? "asc" as const : "desc" as const,
+                    }
+                    :
+                    {
+                        column: undefined,
+                        order: undefined,
+                    };
+
+                if (
+                    prevSort.column !== newSort.column ||
+                    prevSort.order !== newSort.order
+                ) {
+                    setPagination(prev => ({
+                        ...prev,
+                        current: 1,
+                    }));
+                }
+
+                return newSort;
+            });
         }
     }
-    console.log(loaded, stores);
-
-    // useEffect(() => {
-    //     if (flashMessage) {
-    //         messageApi.open({
-    //             type: 'success',
-    //             content: flashMessage,
-    //         });
-    //         setFlashMessage('');
-    //     }
-    // }, [flashMessage, messageApi]);
-
-    type DataIndex = keyof StoreType;
-
-    const [searchText, setSearchText] = useState('');
-    const [searchedColumn, setSearchedColumn] = useState('');
-    const searchInput = useRef<InputRef>(null);
-
-    const handleSearch = (
-        selectedKeys: string[],
-        confirm: FilterDropdownProps['confirm'],
-        dataIndex: DataIndex,
-    ) => {
-        confirm();
-        setSearchText(selectedKeys[0]);
-        setSearchedColumn(dataIndex);
-    };
-
-    const handleReset = (clearFilters: () => void) => {
-        clearFilters();
-        setSearchText('');
-    };
-
-    const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<StoreType> => ({
-        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-                <Input
-                    ref={searchInput}
-                    placeholder={`${t('common.search')} ${dataIndex}`}
-                    value={selectedKeys[0]}
-                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                    onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                    style={{ marginBottom: 8, display: 'block' }}
-                />
-                <Space>
-                    <Button
-                        type="primary"
-                        onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
-                        size="small"
-                        style={{ width: 90 }}
-                    >
-                        {t('common.search')}
-                    </Button>
-                    <Button
-                        onClick={() => clearFilters && handleReset(clearFilters)}
-                        size="small"
-                        style={{ width: 90 }}
-                    >
-                        {t('common.reset')}
-                    </Button>
-                    <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                            confirm({ closeDropdown: false });
-                            setSearchText((selectedKeys as string[])[0]);
-                            setSearchedColumn(dataIndex);
-                        }}
-                    >
-                        {t('common.filter')}
-                    </Button>
-                    <Button
-                        type="link"
-                        size="small"
-                        onClick={() => {
-                            close();
-                        }}
-                    >
-                        {t('common.close')}
-                    </Button>
-                </Space>
-            </div>
-        ),
-
-
-        filterIcon: (filtered: boolean) => (
-            <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-        ),
-
-        onFilter: (value, record) => {
-            const fieldValue = record[dataIndex];
-            if (typeof fieldValue === 'object' && fieldValue !== null) {
-                if ('en' in fieldValue) {
-                    return fieldValue.en
-                        .toString()
-                        .toLowerCase()
-                        .includes((value as string).toLowerCase());
-                }
-                return JSON.stringify(fieldValue)
-                    .toLowerCase()
-                    .includes((value as string).toLowerCase());
-            }
-            return fieldValue
-                ?.toString()
-                .toLowerCase()
-                .includes((value as string).toLowerCase()) || false;
-        },
-        filterDropdownProps: {
-            onOpenChange(open) {
-                if (open) {
-                    setTimeout(() => searchInput.current?.select(), 100);
-                }
-            },
-        },
-        render: (text, record, index) => {
-            const fieldValue = record[dataIndex];
-            if (typeof fieldValue === 'object' && fieldValue !== null) {
-                if ('en' in fieldValue) {
-                    return fieldValue.en;
-                }
-                return JSON.stringify(fieldValue);
-            }
-            return text;
-        },
-    });
-
-    const handleStatusChange = (checked: boolean, record: StoreType) => {
-        // Handle status change logic here
-        console.log('Status changed for store:', record.id, checked);
-    };
 
     const getActionMenu = (record: StoreType): MenuProps['items'] => [
         {
@@ -206,59 +156,58 @@ export default function StoresIndex() {
             icon: <EditOutlined />,
             label: t('common.edit'),
             onClick: () => navigate(`/admin/dashboard/stores/${record.id}/edit`),
-            disabled: !can('update-stores'),
+            // disabled: !can('update-store-categories'),
         },
         {
             key: 'delete',
             icon: <DeleteOutlined />,
             label: t('common.delete'),
             onClick: () => {
-                axiosClient.delete(`api/admin/dashboard/stores/${record.id}`).then((res) => {
-                    // dispatch({ type: 'DELETE_STORE', payload: record.id });
-                    messageApi.open({
-                        type: 'success',
-                        content: t('stores.storeDeleted'),
-                    });
+                axiosClient.delete(`/api/store-categories/${record.id}`).then((res) => {
+                    // setStoreCategories(prev => prev.filter(cat => cat.id !== record.id));
+                    // messageApi.open({
+                    //     type: 'success',
+                    //     content: t('common.deleted'),
+                    // });
                 });
             },
-            disabled: !can('delete-stores'),
+            // disabled: !can('delete-store-categories'),
         },
     ];
 
+
     const columns: TableColumnsType<StoreType> = [
         {
-            title: 'logo', //t('stores.columns.logo'),
-            dataIndex: 'logo',
-            key: 'logo',
+            title: 'Logo',
+            dataIndex: 'logo_url',
+            key: 'logo_url',
+            align: 'center',
             width: 80,
-            render: (logo) => {
-                return <Image
+            render: (logo_url) => {
+                return (<Image
                     width={60}
                     height={60}
-                    src={logo?.original_url}
-                    fallback="data:image/png;base64,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"
-                />
+                    src={logo_url || undefined}
+                    fallback="data:image/png;base64,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"
+                />);
             }
-            ,
         },
         {
-            title: t('stores.columns.name'),
+            title: <div style={{ textAlign: 'center' }}>Name</div>,
             dataIndex: 'name',
             key: 'name',
             width: 200,
-            ...getColumnSearchProps('name'),
             render: (name) => (
                 <div>
-                    <div className="font-medium">{name[currentLanguage]}</div>
+                    <div className="font-medium">{name}</div>
                 </div>
             ),
         },
         {
-            title: t('stores.columns.email'),
+            title: <div style={{ textAlign: 'center' }}>Email</div>,
             dataIndex: 'email',
             key: 'email',
             width: 200,
-            ...getColumnSearchProps('email'),
             render: (email) => (
                 <div className="flex items-center gap-2">
                     <MailOutlined className="text-gray-400" />
@@ -267,39 +216,27 @@ export default function StoresIndex() {
             ),
         },
         {
-            title: t('stores.columns.phone'),
-            dataIndex: 'phone',
-            key: 'phone',
-            width: 140,
-            ...getColumnSearchProps('phone'),
-            render: (phone) => (
-                <div className="flex items-center gap-2">
-                    <PhoneOutlined className="text-gray-400" />
-                    <span className="text-sm">{phone}</span>
-                </div>
-            ),
-        },
-        {
-            title: t('stores.columns.address'),
+            title: <div style={{ textAlign: 'center' }}>Address</div>,
             dataIndex: 'address',
             key: 'address',
             width: 200,
-            ...getColumnSearchProps('address'),
             render: (address) => (
                 <div>
                     <div className="flex items-center gap-1">
                         <EnvironmentOutlined className="text-gray-400 text-xs" />
-                        <span className="text-sm">{address[currentLanguage]}</span>
+                        <span className="text-sm">{address}</span>
                     </div>
                 </div>
             ),
         },
         {
-            title: t('stores.columns.rating'),
+            title: 'Rate',
             dataIndex: 'rate',
+            align: 'center',
             key: 'rate',
             width: 80,
-            sorter: (a, b) => a.rate - b.rate,
+            sorter: true,
+            sortOrder: sort.order ? sort.order === 'asc' ? 'ascend' : 'descend' : null,
             render: (rate) => (
                 <div className="flex items-center gap-1">
                     <StarOutlined className="text-yellow-400" />
@@ -308,26 +245,27 @@ export default function StoresIndex() {
             ),
         },
         {
-            title: t('stores.columns.status'),
+            title: <div style={{ textAlign: 'center' }}>Active</div>,
             dataIndex: 'is_active',
             key: 'is_active',
-            width: 100,
-            filters: [
-                { text: t('common.active'), value: true },
-                { text: t('common.inactive'), value: false },
-            ],
-            onFilter: (value, record) => record.is_active === value,
+            width: 70,
             render: (is_active, record) => (
-                <Badge
-                    status={is_active ? 'success' : 'default'}
-                    text={is_active ? t('common.active') : t('common.inactive')}
-                />
+                <Flex justify="center">
+                    {is_active ?
+                        <span style={{ color: 'green', fontSize: 20 }}>
+                            <CheckCircleOutlined />
+                        </span> :
+                        <span style={{ color: 'red', fontSize: 20 }}>
+                            <CloseCircleOutlined />
+                        </span>
+                    }
+                </Flex>
             ),
         },
         {
-            title: t('stores.columns.actions'),
+            title: 'Actions',
             key: 'actions',
-            width: 120,
+            width: 60,
             fixed: 'right',
             render: (_, record) => (
                 <Space size="small">
@@ -347,53 +285,142 @@ export default function StoresIndex() {
         },
     ];
 
-    const tableData = useMemo(() => {
-        return stores.map((store, index) => ({
-            ...store,
-            key: store.id || index,
-        }));
-    }, [stores]);
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            {contextHolder}
-            <div className="rounded-xl p-6 bg-white shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{t('stores.title')}</h1>
-                        <p className="text-gray-600 mt-1">{t('stores.subtitle')}</p>
-                    </div>
-                    {can('create-stores') && (
-                        <Button
-                            type="primary"
-                            size="large"
-                            onClick={() => navigate('/admin/dashboard/stores/create')}
-                            className="flex items-center gap-2"
-                        >
-                            {t('stores.addStore')}
-                        </Button>
-                    )}
+    const items: MenuProps['items'] = [
+        {
+            key: '1',
+            label: (
+                <div style={{ padding: '8px' }} className="flex flex-col gap-4" >
+                    <Label  > Active : </Label>
+                    <Select
+                        options={[
+                            { label: 'All', value: null },
+                            { label: 'Active', value: true },
+                            { label: 'Not Active', value: false },
+                        ]}
+                        placeholder="Select Active Status"
+                        style={{ width: 200 }}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(value) => {
+                            resetPagination();
+                            setIsActive(value);
+                        }}
+                    />
                 </div>
+            ),
+        },
+    ];
 
-                <Table<StoreType>
+    const { Text } = Typography;
+    return (
+        <AppLayout breadcrumbs={breadcrumbs} >
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <div className="flex justify-between">
+                    <div>
+                        {
+                            <Space wrap className="mb-4">
+                                {search && (
+                                    <Tag
+                                        closable
+                                        onClose={() => setSearch(null)}
+                                        closeIcon={<CloseOutlined />}
+                                        color="orange"
+                                        style={{ padding: '0 8px', fontWeight: 500 }}
+                                    >
+                                        Search: {search}
+                                    </Tag>
+                                )}
+
+                                {is_active !== null && (
+                                    <Tag
+                                        closable
+                                        onClose={() => {
+                                            setIsActive(null);
+                                        }}
+                                        closeIcon={<CloseOutlined />}
+                                        color="orange"
+                                        style={{ padding: '0 8px', fontWeight: 500 }}
+                                    >
+                                        {is_active ? 'Active' : 'Not Active'}
+                                    </Tag>
+                                )}
+
+                                {(sort.column && sort.order) && (
+                                    <Tag
+                                        closable
+                                        onClose={() => setSort({ column: undefined, order: undefined })}
+                                        closeIcon={<CloseOutlined />}
+                                        color="orange"
+                                        style={{ padding: '0 8px', fontWeight: 500 }}
+                                    >
+                                        Sort: {sort.column} ({sort.order})
+                                    </Tag>
+                                )}
+
+                                {
+                                    (search || is_active !== null || (sort.column && sort.order)) &&
+                                    <Button size="small" type="link" onClick={() => {
+                                        setSearch(null);
+                                        setIsActive(null);
+                                        setSort({ column: undefined, order: undefined });
+                                        resetPagination();
+                                    }}>
+                                        Clear All
+                                    </Button>
+                                }
+                            </Space>
+                        }
+                    </div>
+
+                    <div className="flex justify-end items-center">
+                        <Input
+                            prefix={<SearchOutlined />}
+                            placeholder="Search globally..."
+                            allowClear
+                            onChange={(e) => {
+                                setSearch(e.currentTarget.value)
+                                resetPagination();
+                            }}
+                            value={search!}
+                            style={{ maxWidth: 300 }}
+                        />
+                        <Dropdown
+                            placement="bottomLeft"
+                            className="w-3"
+                            menu={{ items }}
+                            trigger={['hover']}
+                        >
+                            <Button >
+                                <FilterOutlined />
+                            </Button>
+                        </Dropdown>
+                    </div>
+                </div>
+                <Table
                     columns={columns}
-                    dataSource={tableData}
-                    loading={!loaded}
+                    dataSource={stores}
+                    loading={loading}
+                    bordered
+                    title={() => { return <Text strong >Stores Table </Text> }}
+                    onChange={handleTableChange}
                     pagination={{
+                        ...pagination,
+                        // onChange: handlePaginationChange,
+                        position: ['bottomCenter'],
+                        size: 'default',
                         showSizeChanger: true,
                         showQuickJumper: true,
                         showTotal: (total, range) =>
-                            `${t('pagination.showing')} ${range[0]}-${range[1]} ${t('pagination.of')} ${total} ${t('pagination.entries')}`,
-                        pageSizeOptions: ['10', '20', '50', '100'],
-                        defaultPageSize: 20,
+                            `${range[0]}-${range[1]} of ${total} items`,
+                        pageSizeOptions: PAGE_SIZE_OPTIONS,
+                        responsive: true,
                     }}
-                    scroll={{ x: 1200 }}
-                    size="middle"
-                    bordered
-                    className="custom-table"
+                    rowKey="id"
+                    scroll={{ x: 800 }}
+                    size="small"
                 />
             </div>
-        </AppLayout>
+        </AppLayout >
     );
 }
 

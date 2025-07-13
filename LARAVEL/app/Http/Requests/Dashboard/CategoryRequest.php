@@ -26,7 +26,7 @@ class CategoryRequest extends FormRequest
             'name' => ['required', 'array'],
             'name.en' => ['required', 'string'],
             'name.ar' => ['required', 'string'],
-            
+
             'description' => ['required', 'array'],
             'description.en' => ['required', 'string'],
             'description.ar' => ['required', 'string'],
@@ -34,11 +34,5 @@ class CategoryRequest extends FormRequest
             // 'is_active' => ['required', 'in:active,archived'],
         ];
     }
-    public function messages()
-    {
-        return [
-            'name.required' => "You Must Enter The Category Name",
-            'status.required' => "You Must Determine The Category Status",
-        ];
-    }
+
 }

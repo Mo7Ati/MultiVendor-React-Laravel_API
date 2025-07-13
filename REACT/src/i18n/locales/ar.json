@@ -255,5 +255,39 @@
     "clearFilters": "مسح المرشحات",
     "export": "تصدير",
     "refresh": "تحديث"
+  },
+  "storeCategories": {
+    "title": "تصنيفات المتاجر",
+    "subtitle": "إدارة تصنيفات وأقسام المتاجر",
+    "addCategory": "إضافة تصنيف متجر",
+    "editCategory": "تعديل تصنيف متجر",
+    "createCategory": "إنشاء تصنيف متجر",
+    "categoryDetails": "تفاصيل تصنيف المتجر",
+    "categoryDeleted": "تم حذف تصنيف المتجر بنجاح",
+    "categoryCreated": "تم إنشاء تصنيف المتجر بنجاح",
+    "categoryUpdated": "تم تحديث تصنيف المتجر بنجاح",
+    "deleteConfirm": "هل أنت متأكد من حذف تصنيف المتجر هذا؟",
+    "columns": {
+      "id": "الرقم",
+      "name": "الاسم",
+      "description": "الوصف",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "form": {
+      "nameEn": "الاسم (الإنجليزية)",
+      "nameAr": "الاسم (العربية)",
+      "descriptionEn": "الوصف (الإنجليزية)",
+      "descriptionAr": "الوصف (العربية)",
+      "storeInformation": "معلومات تصنيف المتجر",
+      "isActive": "حالة النشاط"
+    },
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "nameMaxLength": "الاسم يجب ألا يتجاوز 255 حرف",
+      "nameEnRequired": "اسم اللغة الإنجليزية مطلوب",
+      "nameArRequired": "اسم اللغة العربية مطلوب",
+      "descriptionMaxLength": "الوصف يجب ألا يتجاوز 500 حرف"
+    }
   }
 } 

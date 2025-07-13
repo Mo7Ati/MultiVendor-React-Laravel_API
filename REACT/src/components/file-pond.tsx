@@ -27,8 +27,6 @@ interface Iprops {
 }
 
 const Pond = memo(function Pond(props: Iprops) {
-
-    console.log(props);
     return (
         <FilePond
             name="upload"

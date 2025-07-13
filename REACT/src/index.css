@@ -1,5 +1,8 @@
 @import 'tailwindcss';
+@import 'datatables.net-dt';
 
+@import 'datatables.net-searchpanes-dt';
+@import 'datatables.net-select-dt';
 
 #nprogress .bar {
     background: #000000 !important;
