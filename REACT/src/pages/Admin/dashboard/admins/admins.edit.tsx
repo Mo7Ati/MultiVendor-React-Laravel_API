@@ -1,285 +1,164 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import AdminForm from "./admins.form";
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Input,
-    Image,
     Button,
     Form,
-    Radio,
-    Upload,
     Checkbox,
+    Radio,
+    message,
+    Card,
+    Col,
+    Row,
     Select,
-    Spin,
 } from 'antd';
-
-import { AdminType, EStatus } from "@/types/dashboard";
-import { AdminsContext } from "@/providers/admin-provider";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "@/axios-client";
-import { RolesContext } from "@/providers/roles-provider";
+import { AdminType, EStatus } from "@/types/dashboard";
+import { Loader } from "@/components/loader";
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Admins',
-        href: '/admins',
-    },
+    { title: 'Admins', href: '/admin/dashboard/admins' },
+    { title: 'Create Admin', href: '/admin/dashboard/admins/create' },
 ];
 
-export default function EditAdmin(props: any) {
-    const { admins, getAdmins, dispatch, setFlashMessage, loaded } = useContext(AdminsContext);
-    const { state, getRoles, loaded: RolesLoaded } = useContext(RolesContext);
+export default function CreateAdmin() {
+    const [form] = Form.useForm();
+    const navigate = useNavigate();
+    const [backendErrors, setBackendErrors] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [loaded, setLoaded] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
+
+    const InitialValues: AdminType = {
+        name: '',
+        email: '',
+        password: '',
+        roles: [],
+    }
+    const [admin, setAdmin] = useState<AdminType>(InitialValues);
 
     const params = useParams();
-    const navigate = useNavigate();
-    const [admin, setAdmin] = useState<AdminType>(admins.find(admin => admin.id === Number(params.id))!);
 
-
-    useEffect(() => {
-        if (!loaded) {
-            getAdmins();
+    const getAdmin = async () => {
+        setBackendErrors([]);
+        try {
+            const response = await axiosClient.get(`/api/admin/dashboard/admins/${Number(params.id)}`);
+            setLoaded(true);
+            setAdmin(response.data);
+        } catch (error: any) {
+            if (error.response?.data?.errors) {
+                const flatErrors = Object.values(error.response.data.errors).flat();
+                setBackendErrors(flatErrors as string[]);
+            } else {
+                setBackendErrors(["An unexpected error occurred."]);
+            }
         }
-        if (!RolesLoaded) {
-            getRoles();
-        }
-    }, [])
-    useEffect(() => {
-        setAdmin(admins.find(admin => admin.id === Number(params.id))!);
-    }, [loaded])
-
-
-    const [errors, setErrors] = useState({
-        name: '',
-        password: '',
-        email: '',
-        username: '',
-        phone_number: '',
-        roles: '',
-        status: '',
-        super_admin: '',
-    })
-
-    const handleSubmit = () => {
-        axiosClient.put(`/api/admin/dashboard/admins/${admin.id}`, admin).then(response => {
-            dispatch({ type: "UPDATE_ADMIN", payload: response.data });
-            setFlashMessage("Admin Updated Successfully");
-            navigate('/admin/dashboard/admins');
-        }).catch(res => {
-            setErrors(res.response.data.errors);
-        });
     }
+    useEffect(() => {
+        getAdmin();
+    }, [])
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        setBackendErrors([]);
+
+        axiosClient.put(`/api/admin/dashboard/admins/${Number(params.id)}`, admin)
+            .then(response => {
+                messageApi.success("Admin Created Successfully");
+                navigate('/admin/dashboard/admins');
+            }).catch(error => {
+                if (error.response?.data?.errors) {
+                    const flatErrors = Object.values(error.response.data.errors).flat();
+                    setBackendErrors(flatErrors as string[]);
+                } else {
+                    setBackendErrors(["An unexpected error occurred."]);
+                }
+            }).finally(() => {
+                setLoading(false);
+            });
+    }
+    console.log(admin && !loading);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {/* <Head title="Categories" /> */}
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {
-                    admin ? <Form
-                        labelCol={{ span: 4 }}
-                        wrapperCol={{ span: 14 }}
-                        layout="horizontal"
-                        style={{ maxWidth: 800 }}
-                        onFinish={handleSubmit}
-                    >
-                        <Form.Item label="Name"
-                            help={
-                                errors.name && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.name}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.name && 'error'}
-                        >
-                            <Input
-                                value={admin.name}
-                                onChange={(e) => {
-                                    errors.name = '';
-                                    setAdmin({ ...admin, name: e.currentTarget.value })
-                                }}
-                            />
-                        </Form.Item>
-                        <Form.Item label="User Name"
-                            help={
-                                errors.username && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.username}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.username && 'error'}
-                        >
-                            <Input
-                                value={admin.username}
-                                onChange={(e) => {
-                                    errors.username = '';
-                                    setAdmin({ ...admin, username: e.currentTarget.value })
-                                }}
-                            />
-
-                        </Form.Item>
-                        <Form.Item label="Email"
-                            help={
-                                errors.email && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.email}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.email && 'error'}
-                        >
-                            <Input
-                                value={admin.email}
-                                onChange={(e) => {
-                                    errors.email = '';
-                                    setAdmin({ ...admin, email: e.currentTarget.value })
-                                }}
-                            />
-
-                        </Form.Item>
-                        <Form.Item label="Phone Number"
-                            help={
-                                errors.phone_number && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.phone_number}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.phone_number && 'error'}
-                        >
-                            <Input
-                                value={admin.phone_number!}
-                                onChange={(e) => {
-                                    errors.phone_number = '';
-                                    setAdmin({ ...admin, phone_number: e.currentTarget.value })
-                                }}
-                            />
-                        </Form.Item>
-                        <Form.Item label="Password"
-                            help={
-                                errors.password && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.password}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.password && 'error'}
-                        >
-                            <Input
-                                value={admin.password}
-                                onChange={(e) => {
-                                    errors.password = '';
-                                    setAdmin({ ...admin, password: e.currentTarget.value })
-                                }}
-                            />
-
-                        </Form.Item>
-
-                        <Form.Item label="Roles"
-                            help={
-                                errors.roles && (
-                                    <span className="ml-5  text-red-450 text-sm font-medium">
-                                        {errors.roles}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.roles && 'error'}
-                        >
-                            {
-                                state.roles ? state.roles.map(role => (
-                                    <Checkbox
-                                        key={role.id}
-                                        value={admin.roles}
-                                        checked={admin.roles.find(r => r.id === role.id) ? true : false}
-                                        onChange={
-                                            (e) => {
-                                                console.log(admin.roles.includes(role));
-
-                                                if (e.target.checked) {
-                                                    const newArray = [...admin.roles];
-                                                    newArray.push(role);
-                                                    setAdmin({ ...admin, roles: newArray })
-                                                } else if (!e.target.checked) {
-                                                    setAdmin({ ...admin, roles: [...admin.roles].filter(r => r.id !== role.id) })
-                                                }
-                                            }}
-                                    >
-                                        {role.name}
-                                    </Checkbox>
-                                )) : <Spin />
-                            }
-                        </Form.Item>
-
-
-                        <Form.Item label="Status"
-                            help={
-                                errors.status && (
-                                    <span className="ml-5 text-red-450 text-sm font-medium">
-                                        {errors.status}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.status ? 'error' : ''}
-                        >
-                            <Radio.Group defaultValue={admin.status}>
-                                <Radio
-                                    value="active"
-                                    name="status"
-                                    onChange={e => {
-                                        errors.status = '';
-                                        setAdmin({ ...admin, status: e.target.value })
-                                    }
-                                    }
-                                >
-                                    Active
-                                </Radio>
-                                <Radio
-                                    value="inactive"
-                                    name="status"
-                                    onChange={e =>
-                                        setAdmin({ ...admin, status: e.target.value })}
-                                >
-                                    Inactive
-                                </Radio>
-                            </Radio.Group>
-                        </Form.Item>
-                        <Form.Item label="Super Admin"
-                            help={
-                                errors.super_admin && (
-                                    <span className="ml-5 text-red-450 text-sm font-medium">
-                                        {errors.super_admin}
-                                    </span>
-                                )
-                            }
-                            validateStatus={errors.super_admin ? 'error' : ''}
-                        >
-                            <Checkbox
-                                checked={admin.super_admin}
-                                onChange={
-                                    (e) => {
-                                        setAdmin({ ...admin, super_admin: e.target.checked })
-                                    }}
-                            >
-
-                            </Checkbox>
-                        </Form.Item>
-                        <Form.Item >
-                            <div className="flex gap-10 mt-1">
-                                <Button color="primary" className="ml-20" htmlType="submit" variant="outlined">
-                                    Create
-                                </Button>
-                                <Button color="danger" variant="outlined"
-                                    onClick={() => {
-                                        navigate('/admin/dashboard/admins');
-                                    }}>
-                                    Cancel
-                                </Button>
+            {contextHolder}
+            {(admin && loaded) ?
+                (<Form
+                    form={form}
+                    initialValues={admin}
+                    labelCol={{ span: 4 }}
+                    wrapperCol={{ span: 14 }}
+                    layout="horizontal"
+                    style={{ maxWidth: '100%', padding: 30 }}
+                    onFinish={handleSubmit}
+                >
+                    {backendErrors.length > 0 && (
+                        <div className="mb-6">
+                            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                <ul className="list-disc pl-5">
+                                    {backendErrors.map((err, idx) => (
+                                        <li key={idx}>{err}</li>
+                                    ))}
+                                </ul>
                             </div>
-                        </Form.Item>
-                    </Form>
-                        : <Spin />
-                }
-            </div>
-        </AppLayout >
+                        </div>
+                    )}
+
+                    <Row>
+                        <Col span={12}>
+                            <Card title="Admin Information" type="inner">
+                                <Form.Item
+                                    name="name"
+                                    label="Name"
+                                    rules={[{ required: true }]}
+                                >
+                                    <Input
+                                        value={admin.name}
+                                        onChange={(e) => {
+                                            setAdmin({ ...admin, name: e.currentTarget.value });
+                                        }}
+                                    />
+                                </Form.Item>
+                                <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+                                    <Input
+                                        value={admin.email}
+                                        onChange={(e) => {
+                                            setAdmin({ ...admin, email: e.currentTarget.value });
+                                        }}
+                                    />
+                                </Form.Item>
+                                <Form.Item
+                                    name="password"
+                                    label="Password"
+                                >
+                                    <Input.Password
+                                        value={admin.password}
+                                        onChange={(e) => {
+                                            setAdmin({ ...admin, password: e.currentTarget.value });
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Card>
+                        </Col>
+                        <Col span={12} >
+                            <Card title="Roles & Status" className="mb-4" type="inner">
+                                <Form.Item name="roles" label="Roles" rules={[{ required: false }]}>
+                                    <Select></Select>
+                                </Form.Item>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    <Form.Item>
+                        <div className="flex gap-4 justify-center mt-4">
+                            <Button type="primary" htmlType="submit" loading={loading}>Update Admin</Button>
+                            <Button onClick={() => navigate('/admin/dashboard/admins')}>Cancel</Button>
+                        </div>
+                    </Form.Item>
+                </Form>) : <Loader />
+            }
+        </AppLayout>
     );
 }

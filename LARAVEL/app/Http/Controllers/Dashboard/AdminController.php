@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\stores\AdminResource;
 use App\Models\Admin;
 use Auth;
 use Illuminate\Http\Request;
@@ -13,37 +14,41 @@ use Throwable;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Gate::authorize('view-admins');
-        $admins = Admin::with('roles')->where('id', '<>', Auth::id())->get();
-        return $admins;
+        $data = $request->validate([
+            'search' => 'nullable|string',
+            'per_page' => 'nullable|integer',
+        ]);
+
+        $query = Admin::with('roles');
+
+        if (isset($data['search'])) {
+            $query->whereLike('name', '%' . $data['search'] . '%')
+                ->orWhereLike('email', '%' . $data['search'] . '%');
+        }
+
+        return AdminResource::collection($query->paginate($data['per_page'] ?? 15));
     }
 
     public function store(Request $request)
     {
-        // Gate::authorize('create-admins');
-
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
             'email' => 'required|email',
             'password' => 'required',
-            'phone_number' => 'required|numeric',
-            'status' => 'required|in:active,inactive',
             'roles' => 'nullable|array',
         ]);
 
         DB::beginTransaction();
         try {
-            $data = $request->except(['password', 'roles']);
-            $data['password'] = Hash::make($request->post('password'));
-            $admin = Admin::create($data);
-
-            if ($request->post('roles')) {
-                foreach ($request->post('roles') as $role) {
-                    $admin->roles()->attach($role['id']);
-                }
+            $admin = Admin::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password']
+            ]);
+            if (isset($data['roles'])) {
+                $admin->assignRole($data['roles']);
             }
             DB::commit();
         } catch (Throwable $e) {
@@ -51,43 +56,28 @@ class AdminController extends Controller
             throw $e;
         }
 
-
         return $admin->load('roles');
     }
 
     public function show(string $id)
     {
-
+        return AdminResource::make(Admin::with('roles')->findOrFail($id));
     }
 
     public function update(Request $request, Admin $admin)
     {
-        Gate::authorize('update-admins');
-
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
             'email' => 'required|email',
-            'password' => 'required',
-            'phone_number' => 'required|numeric',
-            'status' => 'required|in:active,inactive',
+            'password' => 'nullable',
             'roles' => 'nullable|array',
         ]);
-
-        $data = $request->except(['password', 'roles']);
-        $data['password'] = Hash::make($request->post('password'));
 
 
         $admin->update($data);
 
-        if ($request->post('roles')) {
-            $ids = [];
-            foreach ($request->post('roles') as $role) {
-                $ids[] = $role['id'];
-            }
-            $admin->roles()->sync($ids);
-        } else {
-            $admin->roles()->detach();
+        if (isset($data['roles'])) {
+            $admin->syncRoles($data['roles']);
         }
 
         return $admin->load('roles');

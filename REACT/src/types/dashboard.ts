@@ -130,12 +130,8 @@ export type AbilityType = {
 export type AdminType = {
     id?: number;
     name: string;
-    username: string;
-    phone_number: number | string;
     email: string;
-    status: EStatus;
     password: any;
-    super_admin: boolean;
     roles: RoleType[];
 }
 

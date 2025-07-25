@@ -2,31 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Traits\HasRoles;
 class Admin extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $guard = ['admin'];
     protected $fillable = [
         'name',
-        'username',
-        'password',
-        'phone_number',
-        'status',
-        'super_admin',
         'email',
-        'store_id',
+        'password',
     ];
 
-    public function roles()
+    public function setPasswordAttribute($value)
     {
-        return $this->morphToMany(Role::class, 'authorizable', 'role_users');
+        $this->attributes['password'] = Hash::make($value);
     }
 
     public function hasAbility($ability)

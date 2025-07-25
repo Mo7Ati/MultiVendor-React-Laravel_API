@@ -72,12 +72,6 @@ export default function ProductsIndex() {
         return () => clearTimeout(delayDebounce);
     }, [search])
 
-    useEffect(() => {
-        getStores();
-        getCategories();
-    }, [])
-
-
     const getProducts = async () => {
         setLoading(true);
         try {
@@ -205,8 +199,8 @@ export default function ProductsIndex() {
             key: 'store',
             width: 100,
             render: (store) => (
-                <div className="flex items-center gap-2">
-                    <span className="text-sm">{store}</span>
+                <div className="flex justify-center">
+                    {store}
                 </div>
             ),
         },
@@ -216,8 +210,8 @@ export default function ProductsIndex() {
             key: 'category',
             width: 149,
             render: (category) => (
-                <div className="flex items-center gap-2">
-                    <span className="text-sm">{category}</span>
+                <div className="flex justify-center">
+                    {category}
                 </div>
             ),
         },
@@ -229,10 +223,8 @@ export default function ProductsIndex() {
             sorter: true,
             sortOrder: sort.order ? sort.order === 'asc' ? 'ascend' : 'descend' : null,
             render: (price) => (
-                <div>
-                    <div className="flex items-center gap-1">
-                        <span className="text-sm">{price}</span>
-                    </div>
+                <div className="flex justify-center">
+                    {price}
                 </div>
             ),
         },
@@ -301,7 +293,7 @@ export default function ProductsIndex() {
                     <Label  > Store : </Label>
                     <Select
                         value={store}
-                        options={stores && stores.map(store => ({ label: store.name, value: store.id }))}
+                        options={stores && [{ label: '_', value: null }, ...stores.map(store => ({ label: store.name, value: store.id }))]}
                         placeholder="Select Active Status"
                         style={{ width: 200 }}
                         onClick={(e) => e.stopPropagation()}
@@ -416,7 +408,11 @@ export default function ProductsIndex() {
                             menu={{ items }}
                             trigger={['click']}
                             open={dropdownOpen}
-                            onOpenChange={setDropdownOpen}
+                            onOpenChange={(open) => {
+                                setDropdownOpen(open)
+                                if (open && stores.length === 0) getStores();
+                                if (open && categories.length === 0) getCategories();
+                            }}
                         >
                             <Button>
                                 <FilterOutlined />
