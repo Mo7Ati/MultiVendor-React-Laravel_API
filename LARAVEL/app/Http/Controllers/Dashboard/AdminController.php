@@ -4,30 +4,25 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
-use App\Models\Role;
-use App\Models\RoleUser;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Inertia\Inertia;
-use PhpParser\Node\Expr\Throw_;
 use Throwable;
-use function PHPUnit\Framework\throwException;
 
 class AdminController extends Controller
 {
     public function index()
     {
-        Gate::authorize('view-admins');
+        // Gate::authorize('view-admins');
         $admins = Admin::with('roles')->where('id', '<>', Auth::id())->get();
-        return ['admins' => $admins];
+        return $admins;
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('create-admins');
+        // Gate::authorize('create-admins');
 
         $request->validate([
             'name' => 'required|string|max:255',

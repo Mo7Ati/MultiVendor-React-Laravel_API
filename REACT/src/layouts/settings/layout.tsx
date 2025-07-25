@@ -1,30 +1,13 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
+import { AdminSidebarNavItems, cn, StoreSidebarNavItems } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { type PropsWithChildren } from 'react';
+import { ReactNode } from 'react';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        url: '/admin/dashboard/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        url: '/admin/dashboard/settings/password',
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        url: '/admin/dashboard/settings/appearance',
-        icon: null,
-    },
-];
 
-export default function SettingsLayout({ children }: PropsWithChildren) {
+
+export default function SettingsLayout({ children, type }: { children: ReactNode, type: 'admin' | 'store' }) {
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;
@@ -38,7 +21,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item) => (
+                        {(type === 'admin' ? AdminSidebarNavItems : StoreSidebarNavItems).map((item) => (
                             <Button
                                 key={item.url}
                                 size="sm"

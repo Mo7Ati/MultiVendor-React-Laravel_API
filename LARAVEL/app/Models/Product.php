@@ -6,37 +6,43 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, HasTranslations, InteractsWithMedia, Searchable;
+
     protected $fillable = [
         'name',
-        'slug',
         'description',
-        'image',
+        'keywords',
         'price',
         'compare_price',
         'store_id',
         'category_id',
-        'status',
+        'is_active',
+        'is_accepted',
         'quantity',
     ];
-    protected function casts(): array
-    {
-        return [
-            'category_id' => 'integer',
-            'store_id' => 'integer',
-        ];
-    }
-    protected $appends = ['image_url', 'tags'];
+
+    protected $casts = [
+        'name' => 'array',
+        'address' => 'array',
+        'keywords' => 'array',
+    ];
 
     protected static function booted()
     {
-        static::creating(function (Product $product) {
-            $product->slug = Str::slug($product->name);
+        static::creating(function ($model) {
+            $model->uuid = (string) Str::uuid();
         });
     }
+
+    public array $translatable = ['name', 'description', 'keywords'];
+
 
     public function Store()
     {
@@ -64,22 +70,13 @@ class Product extends Model
         return $this->belongsToMany(Order::class, 'order_items', 'product_id', 'order_id');
     }
 
-    protected function getImageUrlAttribute()
+    public function toSearchableArray()
     {
-        $image = $this->image;
-        if (!$image) {
-            return "https://www.incathlab.com/images/products/default_product.png";
-        }
-        if (Str::startsWith($image, ['http://', 'https://'])) {
-            return $image;
-        }
-        return asset('storage/' . $image);
-
-    }
-
-    protected function getTagsAttribute()
-    {
-        return $this->tags()->pluck('name');
+        return [
+            'name' => $this->name,
+            'keywords' => $this->email,
+            'description' => $this->description,
+        ];
     }
 
 }

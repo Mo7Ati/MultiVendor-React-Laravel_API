@@ -1,5 +1,4 @@
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
-import { DashboardAuthProvider } from '@/providers/dashboard-provider';
 import { type BreadcrumbItem } from '@/types';
 import { type ReactNode } from 'react';
 

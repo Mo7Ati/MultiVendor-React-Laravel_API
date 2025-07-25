@@ -6,17 +6,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { Button } from '@headlessui/react';
 import axiosClient from '@/axios-client';
-import { DashboardAuthContext } from '@/providers/dashboard-provider';
+import { AdminDashboardAuthContext } from '@/providers/admin-dashboard-provider';
 import { use } from 'react';
 
 interface UserMenuContentProps {
     user: User;
 }
 
-export function UserMenuContent({ user }: UserMenuContentProps) {
+export function UserMenuContent({ user, type }: { user: UserMenuContentProps, type: 'admin' | 'store' }) {
     const cleanup = useMobileNavigation();
     const navigate = useNavigate();
-    const { setUser } = use(DashboardAuthContext);
+    const { setUser } = use(AdminDashboardAuthContext);
+    console.log(user);
+
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
@@ -27,7 +29,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" to={"/admin/dashboard/settings/profile"} prefetch={'intent'} onClick={cleanup}>
+                    <Link className="block w-full" to={`/${type}/dashboard/settings/profile`} prefetch={'intent'} onClick={cleanup}>
                         <Settings className="mr-2" />
                         Settings
                     </Link>

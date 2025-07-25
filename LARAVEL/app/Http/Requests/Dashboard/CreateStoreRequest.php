@@ -67,6 +67,8 @@ class CreateStoreRequest extends FormRequest
             'is_active' => ['boolean'],
             'rate' => ['numeric', 'min:0'],
             'logo' => ['nullable', 'string'],
+
+            'category_id' => 'required|numeric|exists:store_categories,id',
         ];
     }
 }

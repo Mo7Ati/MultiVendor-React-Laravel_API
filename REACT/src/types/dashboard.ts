@@ -21,7 +21,18 @@ export type CategoryType = {
 
 export type ProductType = {
     id?: number;
-    name: string;
+    name: {
+        en: string;
+        ar: string;
+    };
+    description: {
+        en: string;
+        ar: string;
+    };
+    keywords: {
+        en: string;
+        ar: string;
+    };
     category_id?: number | string;
     category?: CategoryType;
     store_id: number | string;
@@ -29,13 +40,9 @@ export type ProductType = {
     price: number;
     compare_price: number,
     quantity: number;
-    tags: string[];
-    description: string;
-    image: any;
     image_url?: any;
-    status: EStatus;
-    removeImage?: boolean;
-    _method?: string;
+    is_active: boolean;
+    is_accepted: boolean;
 }
 
 
@@ -97,6 +104,7 @@ export type StoreType = {
 
     is_active: boolean;
     rate: number;
+    category_id: number | null,
 };
 
 
@@ -132,7 +140,7 @@ export type AdminType = {
 }
 
 export interface StoreCategoryType {
-    id: number;
+    id?: number;
     name: {
         en: string;
         ar: string;
@@ -141,6 +149,13 @@ export interface StoreCategoryType {
         en?: string;
         ar?: string;
     };
+    created_at?: string;
+    updated_at?: string;
+}
+export interface StoreCategoryIndexType {
+    id?: number;
+    name: string;
+    description?: string;
     created_at?: string;
     updated_at?: string;
 }

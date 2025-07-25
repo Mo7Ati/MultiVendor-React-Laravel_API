@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Bezhanov\Faker\ProviderCollectionHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Store>
@@ -39,7 +40,7 @@ class StoreFactory extends Factory
             ],
             'email' => $this->faker->unique()->safeEmail,
             'phone' => $this->faker->unique()->phoneNumber,
-            'password' => $this->faker->password,
+            'password' => Hash::make('password'),
             'delivery_time' => $this->faker->numberBetween(10, 20),
             'social_media' => [
                 [
@@ -53,6 +54,7 @@ class StoreFactory extends Factory
             ],
             'rate' => $this->faker->randomFloat(1, 0, 5),
             'is_active' => $this->faker->boolean,
+            'category_id' => 1,
         ];
     }
 }

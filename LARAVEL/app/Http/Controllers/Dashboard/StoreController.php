@@ -43,9 +43,9 @@ class StoreController extends Controller
         $this->storeFiles($request, $store);
         return $store;
     }
-    public function edit(Store $store)
+    public function show(Store $store)
     {
-        return StoreEditResource::make($store);
+        return StoreResource::make($store)->serializeForEdit();
     }
     public function update(UpdateStoreRequest $request, Store $store)
     {

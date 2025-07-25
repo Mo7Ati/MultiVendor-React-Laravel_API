@@ -4,29 +4,53 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\ProductsRequest;
-use App\Models\Category;
+use App\Http\Resources\stores\ProductResource;
 use App\Models\Product;
-use App\Models\Store;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
 use Throwable;
 
 class ProductController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        Gate::authorize('view products');
-        $products = Product::with('Category:name,id', 'Store:name,id')->get();
-        return [
-            'products' => $products,
-            'total_products' => Product::all()->count(),
-        ];
+        $data = $request->validate([
+            'search' => 'nullable|string',
+            'is_active' => 'nullable|in:true,false',
+            'sortColumn' => 'nullable|string',
+            'sortOrder' => 'nullable|in:asc,desc',
+            'per_page' => 'nullable|integer',
+            'store' => "nullable|numeric|exists:stores,id",
+            'category' => "nullable|numeric|exists:categories,id",
+        ]);
+
+
+        $query = Product::with('store', 'category');
+
+        if (isset($data['search'])) {
+            $query->whereLike('name', '%' . $data['search'] . '%')
+                ->orWhereLike('description', '%' . $data['search'] . '%')
+                ->orWhereLike('keywords', '%' . $data['search'] . '%');
+        }
+        if (isset($data['store'])) {
+            $query->whereRelation('store', 'id', $data['store']);
+        }
+        if (isset($data['category'])) {
+            $query->whereRelation('category', 'id', $data['category']);
+        }
+
+        if (array_key_exists('is_active', $data)) {
+            $query->where('is_active', filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $query->orderBy($data['sortColumn'] ?? 'id', $data['sortOrder'] ?? 'asc');
+
+        return ProductResource::collection($query->paginate($data['per_page'] ?? 15));
     }
     public function create()
     {

@@ -12,8 +12,11 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->uuid();
+
             $table->json('name');
             $table->json('description')->nullable();
+            $table->json('keywords');
 
             $table->foreignId('store_id')->constrained('stores')->cascadeOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
@@ -21,14 +24,11 @@ return new class extends Migration {
             $table->double('price');
             $table->double('compare_price')->nullable();
 
-
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_accepted')->default(false);
 
             $table->unsignedSmallInteger('quantity')->default(0);
 
-            $table->json('options')->nullable();
-            $table->float('rating')->default(0);
-            $table->boolean('featured')->default(0);
             $table->timestamps();
         });
     }

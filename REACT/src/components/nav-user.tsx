@@ -5,14 +5,12 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChevronsUpDown } from 'lucide-react';
 import { useContext } from 'react';
-import { DashboardAuthContext } from "@/providers/dashboard-provider";
-import { User } from '@/types';
+import { AdminDashboardAuthContext } from "@/providers/admin-dashboard-provider";
 
-export function NavUser() {
+export function NavUser({ user, type }: { user: any, type: 'admin' | 'store' }) {
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 
-    const { user } = useContext(DashboardAuthContext);
 
     return (
         (user !== null) && (<SidebarMenu>
@@ -29,7 +27,7 @@ export function NavUser() {
                         align="end"
                         side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
                     >
-                        <UserMenuContent user={user} />
+                        <UserMenuContent user={user} type={type} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

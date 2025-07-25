@@ -23,14 +23,22 @@ class ProductFactory extends Factory
         ProviderCollectionHelper::addAllProvidersTo($faker);
 
         return [
-            'name' => $faker->unique()->productName,
-            'image' => "https://dummyimage.com/600x400/000/fff.png&text=" . $faker->numberBetween(0, 30),
-            'description' => $faker->words(2, true),
-            'status' => 'active',
+            'name' => [
+                'en' => $this->faker->name(),
+                'ar' => $this->faker->name() . ' العربية',
+            ],
+            'description' => [
+                'en' => $this->faker->paragraph,
+                'ar' => $this->faker->paragraph . ' بالعربية',
+            ],
+            'keywords' => [
+                'en' => implode(', ', $this->faker->words(5)),
+                'ar' => implode(', ', $this->faker->words(5)) . ' عربية',
+            ],
             'quantity' => $faker->numberBetween(50, 100),
             'price' => $faker->numberBetween(100, 200),
             'compare_price' => $faker->numberBetween(201, 500),
-            'category_id' => Category::inRandomOrder()->first('id'),
+            'category_id' => 1,
             'store_id' => Store::inRandomOrder()->first('id'),
         ];
     }

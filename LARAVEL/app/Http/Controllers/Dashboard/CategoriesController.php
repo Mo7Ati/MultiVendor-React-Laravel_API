@@ -4,26 +4,18 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\CategoryRequest;
+use App\Http\Resources\stores\CategoryResource;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
+
 
 class CategoriesController extends Controller
 {
     public function index()
     {
-        $categories = Category::with('parent')->get();
-        return
-            [
-                'categories' => $categories,
-                'can' => Auth::user()->can('view categories')
-            ];
+        return CategoryResource::collection(Category::paginate());
     }
     public function store(CategoryRequest $request)
     {

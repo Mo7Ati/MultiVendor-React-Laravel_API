@@ -1,9 +1,9 @@
-import { DashboardAuthContext } from "@/providers/dashboard-provider";
+import { AdminDashboardAuthContext, DashboardAuthContext } from "@/providers/admin-dashboard-provider";
 import { useContext } from "react";
 
 
 export function usePermissions() {
-    const { permissions, user } = useContext(DashboardAuthContext);
+    const { permissions, user } = useContext(AdminDashboardAuthContext);
 
     return (ability: string) => {
 
