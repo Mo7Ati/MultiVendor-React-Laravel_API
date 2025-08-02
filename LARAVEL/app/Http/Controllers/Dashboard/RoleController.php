@@ -3,49 +3,49 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
+use App\Http\Resources\stores\RoleResource;
 use App\Models\RoleAbility;
-use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Inertia\Inertia;
-use function PHPUnit\Framework\throwException;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        Gate::authorize('view-roles');
+        $data = $request->validate([
+            'search' => 'nullable|string',
+            'per_page' => 'nullable|integer',
+        ]);
 
-        $roles = Role::with('abilities')->get();
-        $abilities = config('abilities');
+        $query = Role::withCount('permissions');
 
-        return [
-            'roles' => $roles,
-            'allAbilities' => $abilities,
-        ];
+        if (isset($data['search'])) {
+            $query->whereLike('name', '%' . $data['search'] . '%');
+        }
+
+        $query->orderBy($data['sortColumn'] ?? 'id', $data['sortOrder'] ?? 'asc');
+
+        return RoleResource::collection($query->paginate($data['per_page'] ?? 15));
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('create-roles');
-
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'abilities' => 'required|array',
+            'guard' => "required|in:admin,store,web",
+            'permissions' => 'required|array|exists:permissions,name',
         ]);
 
         DB::beginTransaction();
         try {
             $role = Role::create([
-                'name' => $request->post('name'),
+                'name' => $data['name'],
             ]);
 
-            $abilities = $request->post('abilities');
-            $this->storeAbilities($abilities, $role->id);
+            $role->syncPermissions($data['permissions']);
 
             DB::commit();
         } catch (QueryException $e) {
@@ -54,39 +54,39 @@ class RoleController extends Controller
                 $e
             );
         }
-        return $role->load('abilities');
+        return $role->load('permissions');
     }
 
 
     public function show(string $id)
     {
+        $role = Role::with('permissions')->findOrFail($id);
+        return $role;
     }
 
 
     public function update(Request $request, Role $role)
     {
-        Gate::authorize('update roles');
 
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'abilities' => 'required|array',
+            'guard' => "required|in:admin,store,web",
+            'permissions' => 'required|array|exists:permissions,name',
         ]);
 
         DB::beginTransaction();
         try {
             $role->update([
-                'name' => $request->post('name'),
+                'name' => $data['name'],
             ]);
-
-            $this->updateAbilities($request->post('abilities'), $role->id);
-
+            $role->syncPermissions($data['permissions']);
             DB::commit();
         } catch (QueryException $e) {
             DB::rollBack();
             throw $e;
         }
 
-        return $role->load('abilities');
+        return $role->load('permissions');
 
     }
 

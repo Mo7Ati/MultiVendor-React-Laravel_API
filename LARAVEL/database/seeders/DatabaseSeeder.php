@@ -31,6 +31,12 @@ class DatabaseSeeder extends Seeder
         //     'password' => Hash::make('password'),
         // ]);
 
+        Admin::create([
+            'name' => 'Admin',
+            'email' => 'admin@ps.com',
+            'password' => 'password',
+        ]);
+
         StoreCategory::create([
             'name' => [
                 'en' => 'Electronics',
@@ -54,10 +60,6 @@ class DatabaseSeeder extends Seeder
 
         Store::factory()->count(100)->create();
         Product::factory()->count(50)->create();
-        Admin::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@ps.com',
-            'password' => Hash::make('password'),
-        ]);
+
     }
 }

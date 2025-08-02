@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\PermissionsController;
 use App\Http\Controllers\Dashboard\StoreCategoryController;
 use App\Http\Controllers\Dashboard\UploadController;
 use App\Http\Resources\stores\StoreResource;
@@ -39,6 +40,7 @@ Route::group([
         'roles' => RoleController::class,
     ]);
 
+    Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('categories', [CategoriesController::class, 'index'])->name('categories.index');
 

@@ -1,149 +1,193 @@
-import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem } from "@/types";
-import { AbilityType, EAbilityType, RoleType } from "@/types/dashboard";
-import { useContext, useEffect, useState } from 'react';
-import { CheckOutlined, CloseOutlined, UploadOutlined } from '@ant-design/icons';
+import { useEffect, useState } from "react";
 import {
+    Form,
     Input,
     Button,
-    Form,
-    Switch,
-    Spin,
-    Flex,
-} from 'antd';
-import { useAbilities } from "@/hooks/use-abilities";
+    Select,
+    Checkbox,
+    Card,
+    Row,
+    Col,
+    message,
+    Typography,
+    Space,
+} from "antd";
 import axiosClient from "@/axios-client";
+import AppLayout from "@/layouts/app-layout";
 import { useNavigate } from "react-router-dom";
-import { RolesContext } from "@/providers/roles-provider";
+import { BreadcrumbItem } from "@/types";
+import { Loader } from "@/components/loader";
+
+
+const { Title } = Typography;
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Roles',
-        href: '/roles',
-    },
+    { title: "Dashboard", href: "/admin/dashboard" },
+    { title: "Roles", href: "/admin/dashboard/roles" },
+    { title: "Create Role", href: "/admin/dashboard/roles/create" },
 ];
 
-export default function CreateRole() {
-
+export default function RolesCreate() {
+    const [form] = Form.useForm();
     const navigate = useNavigate();
-    const { state, dispatch, setFlashMessage, loaded, getRoles } = useContext(RolesContext);
-    const [role, setRole] = useState<RoleType>({
-        name: '',
-        abilities: state.allAbilities,
-    });
+    const [loading, setLoading] = useState(false);
+    const [permissions, setPermissions] = useState<Record<string, { id: number; name: string; group: string; guard_name: string; }[]>>({});
 
-    const [errors, setErrors] = useState({
-        name: '',
-        abilities: '',
-    });
+    const [role, setRole] = useState<{ name: string, guard: string, permissions: string[] }>(
+        { name: '', guard: '', permissions: [] }
+    );
+    const [backendErrors, setBackendErrors] = useState<string[]>([]);
+
+    const getPermissions = async () => {
+        try {
+            const response = await axiosClient.get("/api/admin/dashboard/permissions");
+            // API returns an object where keys are group names and values are arrays of permissions
+            const permissionsData = response.data && typeof response.data === 'object' ? response.data : {};
+            setPermissions(permissionsData);
+            console.log('Permissions data:', permissionsData);
+        } catch (error) {
+            console.error('Error fetching permissions:', error);
+            message.error("Failed to load permissions.");
+            setPermissions({}); // Ensure we set an empty object on error
+        }
+    };
 
     useEffect(() => {
-        if (!loaded) {
-            getRoles();
+        getPermissions();
+    }, []);
+
+
+    const handlePermissionChange = (permissionName: string, checked: boolean) => {
+        if (checked) {
+            setRole(prev => ({ ...prev, permissions: [...prev.permissions, permissionName] }))
+        } else {
+            setRole(prev => ({ ...role, permissions: role.permissions.filter(name => name !== permissionName) }))
         }
-        setRole({ ...role, abilities: state.allAbilities });
-    }, [loaded])
+    };
 
-
-    console.log(role);
-
-    const handleSubmit = () => {
-        axiosClient.post('/api/admin/dashboard/roles', role)
-            .then(res => {
-                dispatch({ type: "ADD_ROLE", payload: res.data });
-                setFlashMessage('Role Created Successfully');
-                navigate('/admin/dashboard/roles');
-            }).catch(res => {
-                setErrors(res.response.data.errors);
-            });;
-    }
+    const handleSubmit = async () => {
+        setLoading(true);
+        setBackendErrors([]);
+        try {
+            await axiosClient.post("/api/admin/dashboard/roles", role);
+            message.success("Role created successfully.");
+            navigate("/admin/dashboard/roles");
+        } catch (error: any) {
+            if (error.response?.data?.errors) {
+                const errors = Object.values(error.response.data.errors).flat();
+                setBackendErrors(errors as string[]);
+            } else {
+                message.error("An error occurred.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {/* <Head title="Roles" /> */}
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <Form
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 14 }}
-                    layout="horizontal"
-                    style={{ maxWidth: 800 }}
-                    onFinish={handleSubmit}
-                >
+            {
+                Object.keys(permissions).length > 0 ? (
+                    <div className="flex flex-col gap-4 p-4">
+                        <Card title={<Title level={4}>Create Role</Title>} >
+                            {backendErrors.length > 0 && (
+                                <div className="mb-4 text-red-500">
+                                    <ul className="list-disc pl-5">
+                                        {backendErrors.map((err, idx) => (
+                                            <li key={idx}>{err}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            <Form
+                                layout="vertical"
+                                form={form}
+                                onFinish={handleSubmit}
+                                initialValues={role}
+                            >
+                                <Row gutter={16}>
+                                    <Col span={12}>
+                                        <Form.Item
+                                            label="Role Name"
+                                            name="name"
+                                            rules={[{ required: true, message: "Role name is required" }]}
+                                        >
+                                            <Input
+                                                placeholder="Enter role name"
+                                                onChange={e => setRole({ ...role, name: e.currentTarget.value })}
+                                                value={role.name}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item
+                                            label="Guard Name"
+                                            name="guard_name"
+                                            rules={[{ required: true, message: "Guard name is required" }]}
+                                        >
+                                            <Select
+                                                onChange={value => setRole({ ...role, guard: value })}
+                                            >
+                                                <Select.Option value="admin">admin</Select.Option>
+                                                <Select.Option value="web">web</Select.Option>
+                                                <Select.Option value="cashier">cashier</Select.Option>
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
 
-                    <Form.Item label="Role Name"
-                        help={
-                            errors.name && (
-                                <span className="ml-5  text-red-450 text-sm font-medium">
-                                    {errors.name}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.name && 'error'}
-                    >
-                        <Input
-                            value={role.name}
-                            onChange={(e) => {
-                                errors.name = '';
-                                setRole({ ...role, name: e.currentTarget.value });
-                            }}
-                        />
-                    </Form.Item>
-
-
-                    <Form.Item label="Abilities"
-                        help={
-                            errors.abilities && (
-                                <span className="ml-5 text-red-450 text-sm font-medium">
-                                    {errors.abilities}
-                                </span>
-                            )
-                        }
-                        validateStatus={errors.abilities && 'error'}
-                    >
-
-                        <div className="flex flex-col gap-10 items-center h-100 of-hidden flex-wrap">
-                            {
-                                state.allAbilities.length ? state.allAbilities.map(ability => (
-                                    <div className="flex gap-5" key={ability.name}>
+                                <Form.Item
+                                    label="Permissions"
+                                >
+                                    <Row gutter={[16, 16]}>
                                         {
-                                            ability.name
+                                            Object.entries(permissions).map(([groupName, groupPermissions]) => {
+                                                return <Col span={8} key={groupName}>
+                                                    <Card size="small" title={groupName} type="inner">
+                                                        <Space direction="vertical">
+                                                            {groupPermissions.map((permission) => {
+                                                                return (
+                                                                    <Checkbox
+                                                                        key={permission.id}
+                                                                        checked={role.permissions.includes(permission.name)}
+                                                                        onChange={(e) => handlePermissionChange(permission.name, e.target.checked)}
+                                                                    >
+                                                                        {permission.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                                                    </Checkbox>
+                                                                )
+                                                            })}
+                                                        </Space>
+                                                    </Card>
+                                                </Col>
+                                            })
                                         }
-                                        <Switch
-                                            onChange={
-                                                (e) => {
-                                                    const newArray = [...state.allAbilities];
-                                                    newArray.map((ab) => {
-                                                        (ab.ability === ability.ability) && (ab.type = (e ? EAbilityType.ALLOW : EAbilityType.DENY));
-                                                    })
-                                                    setRole({ ...role, abilities: newArray });
-                                                }
-                                            }
-                                            defaultChecked={false}
-                                            checkedChildren={<CheckOutlined />}
-                                            unCheckedChildren={<CloseOutlined />}
-                                        />
+                                    </Row>
+                                </Form.Item>
+
+                                <Form.Item >
+                                    <div className="flex gap-10 mt-1">
+                                        <Button
+                                            type="primary"
+                                            className="ml-20"
+                                            htmlType="submit"
+                                        >
+                                            {'stores.createCategory'}
+                                        </Button>
+                                        <Button
+                                            danger
+                                            onClick={() => {
+                                                navigate('/admin/dashboard/stores');
+                                            }}
+                                        >
+                                            {'common.cancel'}
+                                        </Button>
                                     </div>
-                                )) : <Spin size="large" className="" />
-                            }
-                        </div>
-
-                    </Form.Item>
-
-                    <Form.Item >
-                        <div className="flex gap-10 mt-1">
-                            <Button color="primary" className="ml-20" htmlType="submit" variant="outlined">
-                                Create
-                            </Button>
-                            <Button color="danger" variant="outlined"
-                                onClick={() => {
-                                    navigate('/admin/dashboard/roles');
-                                }}>
-                                Cancel
-                            </Button>
-                        </div>
-                    </Form.Item>
-                </Form>
-            </div>
-        </AppLayout >
+                                </Form.Item>
+                            </Form>
+                        </Card>
+                    </div>) :
+                    <Loader />
+            }
+        </AppLayout>
     );
 }
