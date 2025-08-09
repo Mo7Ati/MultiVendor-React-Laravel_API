@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\OrdersController;
 use App\Http\Controllers\Dashboard\PermissionsController;
 use App\Http\Controllers\Dashboard\StoreCategoryController;
 use App\Http\Controllers\Dashboard\UploadController;
@@ -42,6 +43,7 @@ Route::group([
 
     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('orders', [OrdersController::class, 'index'])->name('orders.index');
     Route::get('categories', [CategoriesController::class, 'index'])->name('categories.index');
 
     Route::post('upload', [UploadController::class, 'store']);

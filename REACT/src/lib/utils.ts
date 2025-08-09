@@ -1,6 +1,6 @@
-import { NavItem } from '@/types';
+import { NavGroup, NavItem } from '@/types';
 import { type ClassValue, clsx } from 'clsx';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Package, Users } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -8,62 +8,96 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 
-export const AdminNavItems: NavItem[] = [
+export const AdminNavItems: NavGroup[] = [
     {
-        title: 'Dashboard',
-        url: "/admin/dashboard",
-        icon: LayoutGrid,
+        title: 'Main',
+        items: [
+            {
+                title: 'Dashboard',
+                url: "/admin/dashboard",
+                icon: LayoutGrid,
+            }
+        ]
     },
     {
-        title: 'Store Categories',
-        url: '/admin/dashboard/store-categories',
-        icon: LayoutGrid,
-        // ability: 'view-categories',
+        title: 'User Management',
+        items: [
+            {
+                title: 'Admins',
+                url: '/admin/dashboard/admins',
+                icon: Users,
+                ability: 'view-admins',
+            },
+            {
+                title: 'Roles',
+                url: '/admin/dashboard/roles',
+                icon: Users,
+                ability: 'view-roles',
+            },
+        ]
     },
     {
-        title: 'Stores',
-        url: '/admin/dashboard/stores',
-        icon: LayoutGrid,
-        ability: 'view-stores',
+        title: 'Store Management',
+        items: [
+            {
+                title: 'Store Categories',
+                url: '/admin/dashboard/store-categories',
+                icon: Package,
+            },
+            {
+                title: 'Stores',
+                url: '/admin/dashboard/stores',
+                icon: Package,
+                ability: 'view-stores',
+            },
+        ]
     },
     {
-        title: 'Products',
-        url: '/admin/dashboard/products',
-        icon: LayoutGrid,
-        ability: 'view-products',
-    },
-    {
-        title: 'Admins',
-        url: '/admin/dashboard/admins',
-        icon: LayoutGrid,
-        ability: 'view-admins',
-    },
-    {
-        title: 'Roles',
-        url: '/admin/dashboard/roles',
-        icon: LayoutGrid,
-        ability: 'view-roles',
+        title: '',
+        items: [
+            {
+                title: 'Products',
+                url: '/admin/dashboard/products',
+                icon: Package,
+                ability: 'view-products',
+            },
+            {
+                title: 'Orders',
+                url: '/admin/dashboard/orders',
+                icon: Package,
+                ability: 'view-orders',
+            },
+        ]
     },
 ];
 
-
-export const StoreNavItems: NavItem[] = [
+export const StoreNavItems: NavGroup[] = [
     {
-        title: 'Dashboard',
-        url: "/store/dashboard",
-        icon: LayoutGrid,
+        title: 'Main',
+        items: [
+            {
+                title: 'Dashboard',
+                url: "/store/dashboard",
+                icon: LayoutGrid,
+            }
+        ]
     },
     {
-        title: 'Categories',
-        url: '/store/dashboard/categories',
-        icon: LayoutGrid,
-        ability: 'view-categories',
-    },
-    {
-        title: 'Products',
-        url: '/store/dashboard/products',
-        icon: LayoutGrid,
-        ability: 'view-products',
+        title: 'Catalog',
+        items: [
+            {
+                title: 'Categories',
+                url: '/store/dashboard/categories',
+                icon: LayoutGrid,
+                ability: 'view-categories',
+            },
+            {
+                title: 'Products',
+                url: '/store/dashboard/products',
+                icon: LayoutGrid,
+                ability: 'view-products',
+            },
+        ]
     },
 ];
 

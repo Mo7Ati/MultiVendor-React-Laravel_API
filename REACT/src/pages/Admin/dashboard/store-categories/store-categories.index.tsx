@@ -125,22 +125,14 @@ export default function StoreCategoriesIndex() {
             dataIndex: 'name',
             key: 'name',
             width: 200,
-            render: (name) => (
-                <div>
-                    <div className="font-medium">{name}</div>
-                </div>
-            ),
+            render: value => <div className="text-center">{value}</div>
         },
         {
             title: <div style={{ textAlign: 'center' }}>Description</div>,
             dataIndex: 'description',
             key: 'description',
             width: 300,
-            render: (description) => (
-                <div>
-                    <div className="text-sm text-gray-600">{description || '-'}</div>
-                </div>
-            ),
+            render: value => <div className="text-center">{value}</div>
         },
         {
             title: 'Actions',

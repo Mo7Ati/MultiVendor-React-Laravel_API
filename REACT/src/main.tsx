@@ -40,6 +40,7 @@ import { StoreGuestRoutes } from './hooks/guest/store-guest-routes';
 import AdminProviderLayout from './components/AdminProviderLayout';
 import StoreProviderLayout from './components/StoreProviderLayout';
 import ProductsIndex from './pages/Admin/dashboard/products/products.index';
+import OrdersIndex from './pages/Admin/dashboard/orders/orders.index';
 
 
 createRoot(document.getElementById('root')!).render(
@@ -55,6 +56,9 @@ createRoot(document.getElementById('root')!).render(
 
                         <Route path={'products'} >
                             <Route path={''} element={<ProductsIndex />} />
+                        </Route>
+                        <Route path={'orders'} >
+                            <Route path={''} element={<OrdersIndex />} />
                         </Route>
                         <Route path={'stores'} >
                             <Route path={''} element={<StoresIndex />} />

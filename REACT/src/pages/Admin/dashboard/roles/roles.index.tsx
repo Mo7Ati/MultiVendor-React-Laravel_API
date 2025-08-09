@@ -186,7 +186,6 @@ export default function RolesIndex() {
                             dataIndex: "name",
                             key: "name",
                             width: '200px',
-
                             render: value => <div className="text-center">{value}</div>
                         },
                         {
@@ -215,7 +214,7 @@ export default function RolesIndex() {
                     title={() => <Text strong>Roles Table</Text>}
                     dataSource={roles}
                     rowKey="id"
-                    loading={loading}
+                    loading={!loaded}
                     onChange={handleTableChange}
                     bordered={true}
                     pagination={{

@@ -5,8 +5,6 @@ import {
     Input,
     Button,
     Form,
-    Checkbox,
-    Radio,
     message,
     Card,
     Col,
@@ -15,8 +13,7 @@ import {
 } from 'antd';
 import { useNavigate } from "react-router-dom";
 import axiosClient from "@/axios-client";
-import { AdminType, EStatus } from "@/types/dashboard";
-import { RolesContext } from "@/providers/roles-provider";
+import { AdminType, EStatus, RoleType } from "@/types/dashboard";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Admins', href: '/admin/dashboard/admins' },
@@ -54,6 +51,21 @@ export default function CreateAdmin() {
             setLoading(false);
         }
     };
+    const [roles, setRoles] = useState<RoleType[]>([]);
+
+    useEffect(() => {
+        getRoles();
+    }, []);
+
+    const getRoles = async () => {
+        try {
+            const response = await axiosClient.get("/api/admin/dashboard/roles");
+            setRoles(response.data.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    console.log(data);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -107,13 +119,36 @@ export default function CreateAdmin() {
                             </Form.Item>
                         </Card>
                     </Col>
-                    <Col span={12} >
-                        <Card title="Roles & Status" className="mb-4" type="inner">
-                            <Form.Item name="roles" label="Roles" rules={[{ required: false }]}>
-                                <Select></Select>
-                            </Form.Item>
-                        </Card>
-                    </Col>
+                    {
+                        roles &&
+                        (
+                            <Col span={12} >
+                                <Card title="Roles & Status" className="mb-4" type="inner">
+                                    <Form.Item name="roles" label="Roles" rules={[{ required: false }]}>
+                                        <Select
+                                            mode="multiple"
+                                            allowClear
+                                            placeholder="Select roles"
+                                            options={[
+                                                ...roles.map(role => ({
+                                                    label: role.name,
+                                                    value: role.id
+                                                }))
+                                            ]}
+                                            onChange={(e) => {
+                                                setData({ ...data, roles: e })
+                                            }}
+                                            filterOption={(input, option) =>
+                                                (option?.label as string)
+                                                    ?.toLowerCase()
+                                                    .includes(input.toLowerCase())
+                                            }
+                                        />
+                                    </Form.Item>
+                                </Card>
+                            </Col>
+                        )
+                    }
                 </Row>
 
                 <Form.Item>

@@ -41,14 +41,12 @@ export default function RolesCreate() {
     const getPermissions = async () => {
         try {
             const response = await axiosClient.get("/api/admin/dashboard/permissions");
-            // API returns an object where keys are group names and values are arrays of permissions
             const permissionsData = response.data && typeof response.data === 'object' ? response.data : {};
             setPermissions(permissionsData);
-            console.log('Permissions data:', permissionsData);
         } catch (error) {
             console.error('Error fetching permissions:', error);
             message.error("Failed to load permissions.");
-            setPermissions({}); // Ensure we set an empty object on error
+            setPermissions({}); 
         }
     };
 

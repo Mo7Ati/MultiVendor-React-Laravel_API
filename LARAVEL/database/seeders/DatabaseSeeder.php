@@ -60,6 +60,9 @@ class DatabaseSeeder extends Seeder
 
         Store::factory()->count(100)->create();
         Product::factory()->count(50)->create();
-
+        $this->call([
+            CustomerSeeder::class,
+            OrderSeeder::class,
+        ]);
     }
 }

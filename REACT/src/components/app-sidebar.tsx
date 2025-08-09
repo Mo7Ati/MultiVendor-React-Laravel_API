@@ -37,7 +37,7 @@ export function AppSidebar({ type, user }: { type: 'admin' | 'store', user: User
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={type === 'admin' ? AdminNavItems : type === 'store' ? StoreNavItems : []} />
+                <NavMain groups={type === 'admin' ? AdminNavItems : type === 'store' ? StoreNavItems : []} />
             </SidebarContent>
 
 

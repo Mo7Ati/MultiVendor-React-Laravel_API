@@ -12,19 +12,21 @@ return new class extends Migration {
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->enum('status', ['pending', 'preparing', 'on_the_way', 'completed', 'cancelled', 'rejected'])->default('pending');
+            $table->enum('payment_status', ['unpaid', 'paid', 'failed', 'refunded'])->default('unpaid');
+            $table->string('cancelled_reason')->nullable();
+
+            $table->foreignId('customer_id')->constrained('customers');
+            $table->json('customer_data');
+
             $table->foreignId('store_id')->constrained('stores');
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('number')->unique();
-            $table->enum(
-                'status',
-                ['pending', 'processing', 'delivering', 'completed', 'cancelled', 'refunded']
-            )->default('pending');
-            $table->enum(
-                'payment_status',
-                ['pending', 'paid', 'failed']
-            )->default('pending');
-            $table->string('payment_method');
-            $table->float('total');
+
+            $table->double('total');
+            $table->double('total_items_amount');
+            $table->double('total_amount');
+            $table->double('delivery_amount')->default(0);
+
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

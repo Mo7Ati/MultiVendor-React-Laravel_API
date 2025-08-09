@@ -15,7 +15,7 @@ import {
 } from 'antd';
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "@/axios-client";
-import { AdminType, EStatus } from "@/types/dashboard";
+import { AdminType, EStatus, RoleType } from "@/types/dashboard";
 import { Loader } from "@/components/loader";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -30,6 +30,8 @@ export default function CreateAdmin() {
     const [loading, setLoading] = useState(false);
     const [loaded, setLoaded] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
+    const [roles, setRoles] = useState<RoleType[]>([]);
+
 
     const InitialValues: AdminType = {
         name: '',
@@ -56,9 +58,20 @@ export default function CreateAdmin() {
             }
         }
     }
+    const getRoles = async () => {
+        try {
+            const response = await axiosClient.get("/api/admin/dashboard/roles");
+            setRoles(response.data.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         getAdmin();
-    }, [])
+        getRoles();
+    }, []);
+    console.log(Object.values(admin.roles).map(r => ({ label: r.name, value: r.id })));
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -79,7 +92,6 @@ export default function CreateAdmin() {
                 setLoading(false);
             });
     }
-    console.log(admin && !loading);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -142,13 +154,41 @@ export default function CreateAdmin() {
                                 </Form.Item>
                             </Card>
                         </Col>
-                        <Col span={12} >
-                            <Card title="Roles & Status" className="mb-4" type="inner">
-                                <Form.Item name="roles" label="Roles" rules={[{ required: false }]}>
-                                    <Select></Select>
-                                </Form.Item>
-                            </Card>
-                        </Col>
+                        {
+                            (admin.roles && roles) &&
+                            (
+                                <Col span={12} >
+                                    <Card title="Roles & Status" className="mb-4" type="inner">
+                                        <Form.Item label="Roles">
+                                            <Select
+                                                mode="multiple"
+                                                allowClear
+                                                placeholder="Select roles"
+                                                defaultValue={
+                                                    (admin.roles && roles)
+                                                        ? Object.values(admin.roles).map(r => r.id)
+                                                        : []
+                                                }
+                                                options={[
+                                                    ...roles.map(role => ({
+                                                        label: role.name,
+                                                        value: role.id
+                                                    }))
+                                                ]}
+                                                onChange={(e: any) => {
+                                                    setAdmin({ ...admin, roles: e })
+                                                }}
+                                                filterOption={(input, option) =>
+                                                    (option?.label as string)
+                                                        ?.toLowerCase()
+                                                        .includes(input.toLowerCase())
+                                                }
+                                            />
+                                        </Form.Item>
+                                    </Card>
+                                </Col>
+                            )
+                        }
                     </Row>
 
                     <Form.Item>
