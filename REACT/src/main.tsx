@@ -1,9 +1,21 @@
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import "@/index.css";
 import './i18n';
 import { LanguageProvider } from './providers/LanguageProvider';
 import { BrowserRouter, createBrowserRouter, Route, RouterProvider, Routes } from 'react-router-dom';
+
+// Create a client
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            retry: 1,
+            staleTime: 5 * 60 * 1000, // 5 minutes
+        },
+    },
+});
 import Profile from './pages/Store/settings/profile';
 import { AdminDashboardAuthProvider } from './providers/admin-dashboard-provider';
 import Password from './pages/Store/settings/password';
@@ -44,81 +56,82 @@ import OrdersIndex from './pages/Admin/dashboard/orders/orders.index';
 
 
 createRoot(document.getElementById('root')!).render(
-    <LanguageProvider>
-        <BrowserRouter>
-            <Routes>
-                <Route path='/admin' element={<AdminProviderLayout />} >
-                    <Route element={<AdminAuth />} path={'dashboard'}>
-                        <Route path='' element={<Dashboard />} />
-                        <Route path={'settings/profile'} element={<Profile />} />
-                        <Route path={'settings/password'} element={<Password />} />
-                        <Route path={'settings/appearance'} element={<Appearance />} />
+    <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/admin' element={<AdminProviderLayout />} >
+                        <Route element={<AdminAuth />} path={'dashboard'}>
+                            <Route path='' element={<Dashboard />} />
+                            <Route path={'settings/profile'} element={<Profile />} />
+                            <Route path={'settings/password'} element={<Password />} />
+                            <Route path={'settings/appearance'} element={<Appearance />} />
 
-                        <Route path={'products'} >
-                            <Route path={''} element={<ProductsIndex />} />
-                        </Route>
-                        <Route path={'orders'} >
-                            <Route path={''} element={<OrdersIndex />} />
-                        </Route>
-                        <Route path={'stores'} >
-                            <Route path={''} element={<StoresIndex />} />
-                            <Route path={'create'} element={<CreateStore />} />
-                            <Route path={':id/edit'} element={<EditStore />} />
-                        </Route>
+                            <Route path={'products'} >
+                                <Route path={''} element={<ProductsIndex />} />
+                            </Route>
+                            <Route path={'orders'} >
+                                <Route path={''} element={<OrdersIndex />} />
+                            </Route>
+                            <Route path={'stores'} >
+                                <Route path={''} element={<StoresIndex />} />
+                                <Route path={'create'} element={<CreateStore />} />
+                                <Route path={':id/edit'} element={<EditStore />} />
+                            </Route>
 
-                        <Route path={'roles'} >
-                            <Route path={''} element={<RolesIndex />} />
-                            <Route path={'create'} element={<CreateRole />} />
-                            <Route path={':id/edit'} element={<EditRole />} />
+                            <Route path={'roles'} >
+                                <Route path={''} element={<RolesIndex />} />
+                                <Route path={'create'} element={<CreateRole />} />
+                                <Route path={':id/edit'} element={<EditRole />} />
+                            </Route>
+                            <Route path={'admins'} >
+                                <Route path={''} element={<AdminsIndex />} />
+                                <Route path={'create'} element={<CreateAdmin />} />
+                                <Route path={':id/edit'} element={<EditAdmin />} />
+                            </Route>
+
+                            <Route path={'store-categories'} >
+                                <Route path={''} element={<StoreCategoriesIndex />} />
+                                <Route path={'create'} element={<StoreCategoryCreate />} />
+                                <Route path={':id/edit'} element={<StoreCategoryEdit />} />
+                            </Route>
+
                         </Route>
-                        <Route path={'admins'} >
-                            <Route path={''} element={<AdminsIndex />} />
-                            <Route path={'create'} element={<CreateAdmin />} />
-                            <Route path={':id/edit'} element={<EditAdmin />} />
-                        </Route>
-
-                        <Route path={'store-categories'} >
-                            <Route path={''} element={<StoreCategoriesIndex />} />
-                            <Route path={'create'} element={<StoreCategoryCreate />} />
-                            <Route path={':id/edit'} element={<StoreCategoryEdit />} />
-                        </Route>
-
-                    </Route>
-                    <Route element={<AdminGuestRoutes />}>
-                        <Route path={'login'} element={<AdminLogin canResetPassword />} />
-                        <Route path={'forgot-password'} element={<ForgotPassword />} />
-                        <Route path={'register'} element={<Register />} />
-                        <Route path={'forgot-password'} element={<ResetPassword />} />
-                    </Route>
-                </Route>
-
-                <Route path='/store' element={<StoreProviderLayout />}>
-                    <Route element={<StoreAuth />} path={'dashboard'}>
-                        <Route path='' element={<Dashboard />} />
-                        <Route path={'settings/profile'} element={<Profile />} />
-                        <Route path={'settings/password'} element={<Password />} />
-                        <Route path={'settings/appearance'} element={<Appearance />} />
-
-                        <Route path={'categories'} >
-                            <Route path={''} element={<CategoriesIndex />} />
-                            <Route path={'create'} element={<CreateCategory />} />
-                            <Route path={':id/edit'} element={<EditCategory />} />
-                        </Route>
-
-                        <Route path={'products'} >
-                            <Route path={''} element={<ProductsIndex />} />
-                            <Route path={'create'} element={<CreateProduct />} />
-                            <Route path={':id/edit'} element={<EditProduct />} />
+                        <Route element={<AdminGuestRoutes />}>
+                            <Route path={'login'} element={<AdminLogin canResetPassword />} />
+                            <Route path={'forgot-password'} element={<ForgotPassword />} />
+                            <Route path={'register'} element={<Register />} />
+                            <Route path={'forgot-password'} element={<ResetPassword />} />
                         </Route>
                     </Route>
-                    <Route element={<StoreGuestRoutes />}>
-                        <Route path={'login'} element={<Login canResetPassword />} />
-                        <Route path={'forgot-password'} element={<ForgotPassword />} />
-                        <Route path={'register'} element={<Register />} />
-                        <Route path={'forgot-password'} element={<ResetPassword />} />
+
+                    <Route path='/store' element={<StoreProviderLayout />}>
+                        <Route element={<StoreAuth />} path={'dashboard'}>
+                            <Route path='' element={<Dashboard />} />
+                            <Route path={'settings/profile'} element={<Profile />} />
+                            <Route path={'settings/password'} element={<Password />} />
+                            <Route path={'settings/appearance'} element={<Appearance />} />
+
+                            <Route path={'categories'} >
+                                <Route path={''} element={<CategoriesIndex />} />
+                                <Route path={'create'} element={<CreateCategory />} />
+                                <Route path={':id/edit'} element={<EditCategory />} />
+                            </Route>
+
+                            <Route path={'products'} >
+                                <Route path={''} element={<ProductsIndex />} />
+                                <Route path={'create'} element={<CreateProduct />} />
+                                <Route path={':id/edit'} element={<EditProduct />} />
+                            </Route>
+                        </Route>
+                        <Route element={<StoreGuestRoutes />}>
+                            <Route path={'login'} element={<Login canResetPassword />} />
+                            <Route path={'forgot-password'} element={<ForgotPassword />} />
+                            <Route path={'register'} element={<Register />} />
+                        </Route>
                     </Route>
-                </Route>
-            </Routes>
-        </BrowserRouter >
-    </LanguageProvider >
-)
+                </Routes>
+            </BrowserRouter>
+        </LanguageProvider>
+    </QueryClientProvider>
+);

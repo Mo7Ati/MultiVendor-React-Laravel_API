@@ -13,6 +13,7 @@ use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\StoreController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Dashboard\DashboardController;
 
 
 Route::get('/admin', function () {
@@ -40,6 +41,9 @@ Route::group([
         'users' => UserController::class,
         'roles' => RoleController::class,
     ]);
+
+    Route::get('/stats', [DashboardController::class, 'index'])->name('dashboard.stats');
+
 
     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
     Route::get('products', [ProductController::class, 'index'])->name('products.index');

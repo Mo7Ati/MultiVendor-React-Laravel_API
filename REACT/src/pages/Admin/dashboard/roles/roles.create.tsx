@@ -17,6 +17,8 @@ import AppLayout from "@/layouts/app-layout";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbItem } from "@/types";
 import { Loader } from "@/components/loader";
+import { useQuery } from "@tanstack/react-query";
+import { getPermissions } from "@/services/dashboardService";
 
 
 const { Title } = Typography;
@@ -30,29 +32,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function RolesCreate() {
     const [form] = Form.useForm();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [permissions, setPermissions] = useState<Record<string, { id: number; name: string; group: string; guard_name: string; }[]>>({});
 
     const [role, setRole] = useState<{ name: string, guard: string, permissions: string[] }>(
         { name: '', guard: '', permissions: [] }
     );
-    const [backendErrors, setBackendErrors] = useState<string[]>([]);
 
-    const getPermissions = async () => {
-        try {
-            const response = await axiosClient.get("/api/admin/dashboard/permissions");
-            const permissionsData = response.data && typeof response.data === 'object' ? response.data : {};
-            setPermissions(permissionsData);
-        } catch (error) {
-            console.error('Error fetching permissions:', error);
-            message.error("Failed to load permissions.");
-            setPermissions({}); 
-        }
-    };
-
-    useEffect(() => {
-        getPermissions();
-    }, []);
+    
+    const { data, error, isLoading } = useQuery<Record<string, { id: number; name: string; group: string; guard_name: string; }[]>>({
+        queryKey: ['permissions'],
+        queryFn: getPermissions,
+    })
 
 
     const handlePermissionChange = (permissionName: string, checked: boolean) => {
@@ -64,8 +53,8 @@ export default function RolesCreate() {
     };
 
     const handleSubmit = async () => {
-        setLoading(true);
-        setBackendErrors([]);
+        // setLoading(true);
+        // setBackendErrors([]);
         try {
             await axiosClient.post("/api/admin/dashboard/roles", role);
             message.success("Role created successfully.");
@@ -73,27 +62,26 @@ export default function RolesCreate() {
         } catch (error: any) {
             if (error.response?.data?.errors) {
                 const errors = Object.values(error.response.data.errors).flat();
-                setBackendErrors(errors as string[]);
+                // setBackendErrors(errors as string[]);
             } else {
                 message.error("An error occurred.");
             }
         } finally {
-            setLoading(false);
+            // setLoading(false);
         }
     };
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {
-                Object.keys(permissions).length > 0 ? (
+                !isLoading ? (
                     <div className="flex flex-col gap-4 p-4">
                         <Card title={<Title level={4}>Create Role</Title>} >
-                            {backendErrors.length > 0 && (
+                            {error && (
                                 <div className="mb-4 text-red-500">
                                     <ul className="list-disc pl-5">
-                                        {backendErrors.map((err, idx) => (
-                                            <li key={idx}>{err}</li>
-                                        ))}
+                                        <div>{error.message}</div>
                                     </ul>
                                 </div>
                             )}
@@ -139,7 +127,7 @@ export default function RolesCreate() {
                                 >
                                     <Row gutter={[16, 16]}>
                                         {
-                                            Object.entries(permissions).map(([groupName, groupPermissions]) => {
+                                            Object.entries(data!).map(([groupName, groupPermissions]) => {
                                                 return <Col span={8} key={groupName}>
                                                     <Card size="small" title={groupName} type="inner">
                                                         <Space direction="vertical">

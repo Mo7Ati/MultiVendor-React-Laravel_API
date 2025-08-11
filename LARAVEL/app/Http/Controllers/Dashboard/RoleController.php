@@ -35,7 +35,7 @@ class RoleController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'guard' => "required|in:admin,store,web",
+            'guard' => "required|in:admin1,store,web",
             'permissions' => 'required|array|exists:permissions,name',
         ]);
 
